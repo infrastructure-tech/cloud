@@ -5,7 +5,8 @@ metadata:
     app: element
   name: {{ .Values.service.name }}
 spec:
-  externalTrafficPolicy: Local
+#  type: LoadBalancer
+#  externalTrafficPolicy: Local
   ports:
   - port: 80
   selector:

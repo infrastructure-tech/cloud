@@ -2,4 +2,4 @@ apiVersion: v2
 description: MyHostMySQL
 name: mysql
 type: application
-version: 1.0.12
+version: 1.0.13

@@ -5,7 +5,8 @@ metadata:
     app: {{ .Release.Name }}
   name: {{ .Values.service.nextcloud.name }}
 spec:
-  externalTrafficPolicy: Local
+#  type: LoadBalancer
+#  externalTrafficPolicy: Local
   ports:
   - port: 80
   selector:

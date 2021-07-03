@@ -3,7 +3,8 @@ kind: Service
 metadata:
   name: {{ $.Release.Name }}
 spec:
-  externalTrafficPolicy: Local
+#  type: LoadBalancer
+#  externalTrafficPolicy: Local
   ports:
     {{- range .Values.ports }}
     - name: {{ .name }}

@@ -1,9 +1,9 @@
 apiVersion: v2
 dependencies:
 - name: mysql
-  repository: http://10.5.7.3
-  version: 1.0.12
+  repository: http://10.4.4.2
+  version: 1.0.13
 description: Press Your Words. DO IT NOW!
 name: wordpress
 type: application
-version: 1.1.11
+version: 1.1.12

@@ -5,7 +5,8 @@ metadata:
     app: matrix
   name: {{ .Values.service.matrix.name }}
 spec:
-  externalTrafficPolicy: Local
+#  type: LoadBalancer
+#  externalTrafficPolicy: Local
   ports:
   - port: 8008
     name: http

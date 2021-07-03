@@ -1,7 +1,7 @@
 apiVersion: v2
 dependencies:
 - name: postgres
-  repository: http://10.5.7.3
+  repository: http://10.4.4.2
   version: 0.2.3
 description: Big poofy things in the sky
 name: nextcloud
