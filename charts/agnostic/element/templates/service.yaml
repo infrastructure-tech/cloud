@@ -5,6 +5,7 @@ metadata:
     app: element
   name: {{ .Values.service.name }}
 spec:
+  externalTrafficPolicy: Local
   ports:
   - port: 80
   selector:

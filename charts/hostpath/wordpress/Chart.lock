@@ -1,6 +1,6 @@
 dependencies:
 - name: mysql
-  repository: http://10.4.4.2
+  repository: http://10.5.7.3
   version: 1.0.11
 digest: sha256:0861aa713e3401355dc125119836ecf0559d954806cf4c7a74fb29d69923ce0b
 generated: "2021-03-04T18:18:12.708788412-08:00"

@@ -5,6 +5,7 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 spec:
+  externalTrafficPolicy: Local
   type: {{ .Values.service.type }}
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   ports:

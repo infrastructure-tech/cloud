@@ -5,6 +5,7 @@ metadata:
   labels:
     app: {{ tpl .Values.postgres.deployment.name . }}
 spec:
+  externalTrafficPolicy: Local
   ports:
   - name: http
     port: 5432

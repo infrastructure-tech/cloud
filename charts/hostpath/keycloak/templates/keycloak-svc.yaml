@@ -5,6 +5,7 @@ metadata:
   labels:
     app: keycloak
 spec:
+  externalTrafficPolicy: Local
   ports:
   - name: http
     port: 8080
