@@ -1,0 +1,19 @@
+postgres:
+  deployment:
+    db:
+      auth: password
+      name: CHANGE_ME
+    hostPath:
+      mountPath: /CHANGE_ME
+      name: pg-data
+      volumeMountPath: /var/lib/postgresql/data
+    image: postgres:12.4-alpine
+    name: '{{ .Release.Name }}-postgres'
+    replicas: 1
+  secrets:
+    DB_PASSWORD: CHANGE_ME
+    DB_USER: DEFAULT_USER
+    secretName: '{{ .Release.Name }}-postgres-secret'
+  service:
+    name: '{{ .Release.Name }}-postgres-svc'
+    type: ClusterIP

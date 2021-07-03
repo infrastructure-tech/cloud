@@ -1,0 +1,22 @@
+deployment:
+  affinity: {}
+  database: '{{ .Release.Name }}-db'
+  hostPath:
+    mountPath: /CHANGE_ME
+    name: mysql-data
+  image: mysql:latest
+  name: '{{ .Release.Name }}-mysql'
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2000Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+secrets:
+  secretName: '{{ .Release.Name }}-mysql-secret'
+  user: '{{ .Release.Name }}-mysql-user'
+  password: 'INSECURE'
+  rootpassword: 'INSECURE'
+service:
+  name: '{{ .Release.Name }}-mysql-service'

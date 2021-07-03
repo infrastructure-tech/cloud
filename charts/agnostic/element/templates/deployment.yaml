@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: element
+  name: element-app
+spec:
+  replicas: {{ .Values.app.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: element
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: element
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          {{- range .Values.app.deployment.affinity.podAntiAffinity.podAffinityTerms }}
+            - weight: {{ .weight }}
+              podAffinityTerm:
+                labelSelector:
+                {{- range .podAffinityTerm.labelSelector.matchExpressions }}
+                  matchExpressions:
+                  - key: {{ .key }}
+                    operator: {{ .operator }}
+                    values: {{ .values }}
+                {{- end }}
+                topologyKey: {{ .podAffinityTerm.labelSelector.topologyKey }}
+          {{- end }}
+      volumes:
+        - configMap:
+            name: {{ .Values.app.configmap.config.name }}
+          name: {{ .Values.app.configmap.config.name }}
+      containers:
+      - name: app
+        image: {{ .Values.app.deployment.image }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: {{ .Values.app.configmap.config.name }}
+            mountPath: {{ .Values.app.configmap.config.path }}/{{ .Values.app.configmap.config.filename }}
+            subPath: {{ .Values.app.configmap.config.filename}}
+        resources:
+          requests:
+            cpu: {{ tpl .Values.app.deployment.resources.requests.cpu . }}
+            memory: {{ tpl .Values.app.deployment.resources.requests.memory . }}
+          limits:
+            cpu: {{ tpl .Values.app.deployment.resources.limits.cpu . }}
+            memory: {{ tpl .Values.app.deployment.resources.limits.memory . }}
+      restartPolicy: Always
+      priorityClassName: {{ tpl .Values.app.deployment.priorityClass . }}
+

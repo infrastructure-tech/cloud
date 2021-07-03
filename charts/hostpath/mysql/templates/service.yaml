@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ tpl .Values.service.name . }}
+  labels:
+    app: {{ tpl .Values.deployment.name . }}
+spec:
+  ports:
+  - name: mysql
+    port: 3306
+    protocol: TCP
+  selector:
+    app: {{ tpl .Values.deployment.name . }}
+  type: ClusterIP

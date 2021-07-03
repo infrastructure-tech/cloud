@@ -1,0 +1,40 @@
+app:
+  configmap:
+    config:
+      filename: config.json
+      homeserver: matrix.eons.dev
+      identityServer: https://vector.im
+      name: element-config
+      path: /app
+      protocol: https
+  deployment:
+    affinity:
+      podAntiAffinity:
+        podAffinityTerms:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - element
+              topologyKey: kubernetes.io/hostname
+          weight: 100
+    image: vectorim/element-web:v1.7.17
+    priorityClass: kynreeve
+    replicas: 3
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2000Mi
+      requests:
+        cpu: 500m
+        memory: 500Mi
+  domain: element.eons.dev
+secrets:
+  letsencrypt:
+    issuer: letsencrypt
+    kind: ClusterIssuer
+    secretName: element-letsencrypt-cert
+service:
+  name: element-svc

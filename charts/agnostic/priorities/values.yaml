@@ -1,0 +1,41 @@
+priorityClasses:
+- description: extraneous and possibly unecessary
+  globalDefault: false
+  name: extra
+  value: 1
+- description: Lowest development priority
+  globalDefault: false
+  name: dev-low
+  value: 10
+- description: Medium development priority
+  globalDefault: false
+  name: dev-medium
+  value: 12
+- description: Highest development priority
+  globalDefault: false
+  name: dev-high
+  value: 14
+- description: Lowest production priority
+  globalDefault: false
+  name: prod-low
+  value: 20
+- description: Medium production priority
+  globalDefault: false
+  name: prod-medium
+  value: 22
+- description: Highest production priority
+  globalDefault: false
+  name: prod-high
+  value: 24
+- description: Lowest critical priority
+  globalDefault: false
+  name: crit-low
+  value: 30
+- description: Medium critical priority
+  globalDefault: false
+  name: crit-medium
+  value: 32
+- description: Highest critical priority
+  globalDefault: false
+  name: crit-high
+  value: 34

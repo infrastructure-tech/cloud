@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: {{ .Values.app.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            {{- range .Values.app.deployment.affinity.podAffinity.labelSelectors }}
+            - labelSelector:
+                {{- range .labelSelector.matchExpressions }}
+                matchExpressions:
+                  - key: {{ .key }}
+                    operator: {{ .operator }}
+                    values:
+                      {{- range .values }}
+                      - {{ tpl . $ }}
+                        {{- end }}
+              {{- end }}
+              topologyKey: {{ .labelSelector.topologyKey }}
+              namespaces:
+                - {{ $.Release.Namespace }}
+          {{- end }}
+      containers:
+      - name: keycloak
+        image: {{ .Values.app.deployment.image }}
+        env:
+        - name: KEYCLOAK_STATISTICS
+          value: {{ .Values.app.deployment.env.KEYCLOAK_STATISTICS }}
+        - name: KEYCLOAK_USER
+          valueFrom:
+            secretKeyRef:
+              key: KEYCLOAK_USER
+              name: {{ .Values.secrets.admin.secretName }}
+        - name: KEYCLOAK_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: KEYCLOAK_PASSWORD
+              name: {{ .Values.secrets.admin.secretName }}
+        - name: PROXY_ADDRESS_FORWARDING
+          value: "true"
+        - name: DB_VENDOR
+          value: {{ .Values.app.deployment.env.DB_VENDOR }}
+        - name: DB_DATABASE
+          value: {{ index .Values "postgres" "postgres" "deployment" "db" "name" }}
+        - name: DB_ADDR
+          value: {{ tpl (index .Values "postgres" "postgres" "service" "name") . }}
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              key: DB_USER
+              name: {{ tpl (index .Values "postgres" "postgres" "secrets" "secretName") . }}
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: DB_PASSWORD
+              name: {{ tpl (index .Values "postgres" "postgres" "secrets" "secretName") . }}
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /auth/realms/master
+            port: 8080

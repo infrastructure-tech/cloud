@@ -1,0 +1,44 @@
+app:
+  deployment:
+    affinity:
+      podAffinity:
+        labelSelectors:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - '{{ tpl (index .Values "postgres" "postgres" "deployment"
+                "name") . }}'
+            topologyKey: kubernetes.io/hostname
+    env:
+      DB_VENDOR: postgres
+      KEYCLOAK_STATISTICS: all
+    image: jboss/keycloak:11.0.1
+    replicas: 1
+  domain: sso.eons.dev
+postgres:
+  postgres:
+    deployment:
+      db:
+        auth: password
+        name: keycloak
+      hostPath:
+        mountPath: /eons/local/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
+        name: pg-data
+    secrets:
+      DB_PASSWORD: 0XS3gTo5n7It8wwdk9EnPkS9nSq3oeZD
+      DB_USER: keycloakuser
+secrets:
+  admin:
+    KEYCLOAK_PASSWORD: ToSeeThroughTheEyeOfMagnus!
+    KEYCLOAK_USER: magnus
+    secretName: keycloak-admin-secret
+  letsencrypt:
+    issuer: letsencrypt
+    kind: ClusterIssuer
+    secretName: keycloak-letsencrypt-cert
+service:
+  keycloak:
+    name: keycloak-svc
+    type: ClusterIP

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $.Release.Name }}
+  labels:
+    app: {{ $.Release.Name }}
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.daemonset.serviceAccountName }}
+      containers:
+        - name: {{ $.Release.Name }}
+          image: {{ .Values.daemonset.image }}
+          imagePullPolicy: Always
+          args:
+            {{- range .Values.daemonset.args }}
+            - {{ . }}
+          {{- end }}
+          ports:
+            {{- range .Values.daemonset.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+      {{- end }}
+      restartPolicy: Always

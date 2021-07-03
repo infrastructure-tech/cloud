@@ -1,0 +1,55 @@
+replicaCount: 1
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+image:
+  repository: chartmuseum/chartmuseum
+  tag: v0.12.0
+  pullPolicy: IfNotPresent
+
+container:
+  port: 8080
+env:
+  open:
+    STORAGE: local
+
+service:
+  type: LoadBalancer
+  loadBalancerIP: 10.4.4.2
+  port: 80
+
+serviceMonitor:
+  enabled: false
+  # namespace: prometheus
+  labels: {}
+  metricsPath: "/metrics"
+  # timeout: 60
+  # interval: 60
+
+probes:
+  liveness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+
+hostPath:
+  base: /eons/local
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1000Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+priorityClass: prod-low

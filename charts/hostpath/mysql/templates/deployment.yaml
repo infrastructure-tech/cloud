@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ tpl .Values.deployment.name . }}
+  labels:
+    app: {{ tpl .Values.deployment.name . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ tpl .Values.deployment.name . }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ tpl .Values.deployment.name . }}
+    spec:
+      containers:
+      - image: {{ .Values.deployment.image }}
+        name: mysql
+        args: ["--default-authentication-plugin=mysql_native_password", "--skip-log-bin"]
+        env:
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.secrets.secretName . }}
+              key: MYSQL_PASSWORD
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.secrets.secretName . }}
+              key: MYSQL_USER
+        - name: MYSQL_DATABASE
+          value: {{ tpl .Values.deployment.database . }}
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.secrets.secretName . }}
+              key: MYSQL_ROOT_PASSWORD
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: {{ .Values.deployment.hostPath.name }}
+          mountPath: /var/lib/mysql
+        resources:
+          requests:
+            cpu: {{ .Values.deployment.resources.requests.cpu }}
+            memory: {{ .Values.deployment.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.deployment.resources.limits.cpu }}
+            memory: {{ .Values.deployment.resources.limits.memory }}
+      volumes:
+      - name: {{ .Values.deployment.hostPath.name }}
+        hostPath:
+          path: {{ tpl .Values.deployment.hostPath.mountPath . }}
+          type: DirectoryOrCreate
+      {{- if .Values.deployment.priorityClass }}
+      priorityClassName: {{ tpl .Values.deployment.priorityClass . }}
+      {{- end }}
+      {{- if .Values.deployment.affinity.nodeSelectors }}
+      nodeSelector:
+      {{- range .Values.deployment.affinity.nodeSelectors }}
+        {{ .key }}: {{ .value }}
+      {{- end }}
+      {{- end }}

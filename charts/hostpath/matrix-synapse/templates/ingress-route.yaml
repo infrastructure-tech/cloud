@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: matrix
+spec:
+  entryPoints:
+    - websecure
+    - matrix-fed
+  routes:
+  - kind: Rule
+    match: Host(`{{ .Values.app.domain }}`)
+    services:
+    - name: {{ .Values.service.matrix.name }}
+      port: 8008
+  tls:
+    secretName: {{ .Values.secrets.letsencrypt.secretName }}

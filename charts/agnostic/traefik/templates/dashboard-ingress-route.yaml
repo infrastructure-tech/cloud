@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  entryPoints:
+    {{- range .Values.dashboard.entryPoints }}
+    - {{ . }}
+    {{- end }}
+  routes:
+    {{- range .Values.dashboard.routes }}
+    - kind: {{ .kind }}
+      match: {{ .match }}
+      services:
+        {{- range .services }}
+        - name: {{ .name }}
+          port: {{ .port }}
+        {{- end }}
+    {{- end }}

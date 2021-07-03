@@ -1,0 +1,41 @@
+deployment:
+  configmap:
+    php:
+      filename: custom-php.ini
+      name: custom-php
+      path: /usr/local/etc/php/conf.d
+  hostPath:
+    mountPath: /eons/local/wp/{{ .Release.Name }}/app
+    name: wp-data
+  image: wordpress:latest
+  name: '{{ .Release.Name }}-wp'
+  priorityClass: dev-low
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2000Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+domain: INVALID
+mysql:
+  deployment:
+    priorityClass: dev-low
+    affinity:
+      nodeSelectors:
+      - key: serve
+        value: dev
+    database: '{{ .Release.Name }}-db'
+    hostPath:
+      mountPath: /eons/local/wp/{{ .Release.Name }}/db
+      name: mysql-data
+  secrets:
+    password: 'CHANGEME'
+    rootpassword: 'CHANGEME'
+    user: '{{ .Release.Name }}-mysql-user'
+  service:
+    name: '{{ .Release.Name }}-mysql-service'
+secrets:
+  letsencrypt:
+    issuer: letsencrypt-staging
+    kind: ClusterIssuer

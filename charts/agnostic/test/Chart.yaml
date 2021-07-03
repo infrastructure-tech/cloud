@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 1.20.0
+description: Don't test me.
+name: test
+type: application
+version: 0.0.1

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ tpl .Values.deployment.name . }}
+  labels:
+    app: {{ tpl .Values.deployment.name . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ tpl .Values.deployment.name . }}
+  template:
+    metadata:
+      labels:
+        app: {{ tpl .Values.deployment.name . }}
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values: [{{ .Release.Name }}-mysql]
+            topologyKey: kubernetes.io/hostname
+            # namespaces: ["*"]
+      containers:
+      - image: {{ .Values.deployment.image }}
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: {{ .Release.Name }}-mysql-service:3306
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl (index .Values "mysql" "secrets" "secretName") . }}
+              key: MYSQL_PASSWORD
+        - name: WORDPRESS_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl (index .Values "mysql" "secrets" "secretName") . }}
+              key: MYSQL_USER
+        - name: WORDPRESS_DB_NAME
+          value: {{ tpl (index .Values "mysql" "deployment" "database") . }}
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: {{ .Values.deployment.hostPath.name }}
+          mountPath: /var/www/html
+        - name: {{ .Values.deployment.configmap.php.name }}
+          mountPath: {{ .Values.deployment.configmap.php.path }}/{{ .Values.deployment.configmap.php.filename }}
+          subPath: {{ .Values.deployment.configmap.php.filename }}
+        resources:
+          requests:
+            cpu: {{ tpl .Values.deployment.resources.requests.cpu . }}
+            memory: {{ tpl .Values.deployment.resources.requests.memory . }}
+          limits:
+            cpu: {{ tpl .Values.deployment.resources.limits.cpu . }}
+            memory: {{ tpl .Values.deployment.resources.limits.memory . }}
+      volumes:
+      - name: {{ .Values.deployment.hostPath.name }}
+        hostPath:
+          path: {{ tpl .Values.deployment.hostPath.mountPath . }}
+          type: DirectoryOrCreate
+        # persistentVolumeClaim:
+        #   claimName: {{ tpl .Values.deployment.name . }}-pvc
+      - configMap:
+          name: {{ .Values.deployment.configmap.php.name }}
+        name: {{ .Values.deployment.configmap.php.name }}
+      priorityClassName: {{ tpl .Values.deployment.priorityClass . }}

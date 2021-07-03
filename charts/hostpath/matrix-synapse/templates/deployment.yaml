@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: matrix
+  name: matrix-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matrix
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: matrix
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            {{- range .Values.app.deployment.affinity.podAffinity.labelSelectors }}
+            - labelSelector:
+                {{- range .labelSelector.matchExpressions }}
+                matchExpressions:
+                  - key: {{ .key }}
+                    operator: {{ .operator }}
+                    values:
+                      {{- range .values }}
+                      - {{ tpl . $ }}
+                        {{- end }}
+              {{- end }}
+              topologyKey: {{ .labelSelector.topologyKey }}
+              namespaces:
+                - {{ $.Release.Namespace }}
+          {{- end }}
+      volumes:
+        - name: {{ .Values.secrets.signingKey.secretName }}
+          secret:
+            secretName: {{ .Values.secrets.signingKey.secretName }}
+        - name: {{ .Values.app.deployment.synapsePath.name }}
+          hostPath:
+            path: {{ tpl .Values.app.deployment.synapsePath.mountPath . }}
+            type: DirectoryOrCreate
+        - name: {{ .Values.app.deployment.dataPath.name }}
+          hostPath:
+            path: {{ tpl .Values.app.deployment.dataPath.mountPath . }}
+            type: DirectoryOrCreate
+        - configMap:
+            name: {{ .Values.app.configmap.homeserver.name }}
+          name: {{ .Values.app.configmap.homeserver.name }}
+        - configMap:
+            name: {{ .Values.app.configmap.log.name }}
+          name: {{ .Values.app.configmap.log.name }}
+      containers:
+      - name: app
+        env:
+          - name: SYNAPSE_CONFIG_PATH
+            value: "{{ .Values.app.configmap.homeserver.path }}/{{ .Values.app.configmap.homeserver.filename }}"
+          - name: UID
+            value: "{{ .Values.app.deployment.env.UID }}"
+          - name: GID
+            value: "{{ .Values.app.deployment.env.GID }}"
+        image: {{ .Values.app.deployment.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8008
+        volumeMounts:
+          - name: {{ .Values.app.deployment.synapsePath.name }}
+            mountPath: {{ .Values.app.deployment.synapsePath.volumeMountPath }}
+          - name: {{ .Values.app.deployment.dataPath.name }}
+            mountPath: {{ .Values.app.deployment.dataPath.volumeMountPath }}
+          - name: {{ .Values.app.configmap.homeserver.name }}
+            mountPath: {{ .Values.app.configmap.homeserver.path }}
+          - name: {{ .Values.secrets.signingKey.secretName }}
+            mountPath: {{ .Values.secrets.signingKey.path }}
+          - name: {{ .Values.app.configmap.log.name }}
+            mountPath: {{ .Values.app.configmap.log.path }}
+        resources:
+          requests:
+            cpu: {{ tpl .Values.app.deployment.resources.requests.cpu . }}
+            memory: {{ tpl .Values.app.deployment.resources.requests.memory . }}
+          limits:
+            cpu: {{ tpl .Values.app.deployment.resources.limits.cpu . }}
+            memory: {{ tpl .Values.app.deployment.resources.limits.memory . }}
+      restartPolicy: Always
+      priorityClassName: {{ tpl .Values.app.deployment.priorityClass . }}
+

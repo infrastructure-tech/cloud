@@ -1,0 +1,69 @@
+app:
+  deployment:
+    affinity:
+      podAffinity:
+        labelSelectors:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - '{{ tpl (index .Values "postgres" "deployment" "name") .
+                }}'
+            topologyKey: kubernetes.io/hostname
+    env:
+      APACHE_DISABLE_REWRITE_IP: 1
+      OVERWRITEPROTOCOL: https
+      TRUSTED_PROXIES: 10.4.111.1
+    hostPath:
+      mountPath: /k8s/red/{{ .Release.Namespace }}/{{ .Release.Name }}/app
+      name: app
+    image: nextcloud:19.0.5-apache
+    priorityClass: prod-low
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4000Mi
+      requests:
+        cpu: 500m
+        memory: 1000Mi
+  domain: nc.test.eons.dev
+postgres:
+  deployment:
+    affinity:
+      nodeSelectors:
+      - key: storage
+        value: red1
+      - key: db
+        value: sync1
+    db:
+      auth: password
+      name: nextcloud
+    hostPath:
+      mountPath: /eons/local/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
+      name: pg-data
+    priorityClass: prod-low
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4000Mi
+      requests:
+        cpu: 500m
+        memory: 1000Mi
+  secrets:
+    DB_PASSWORD: CNjhIbAgFGPy
+    DB_USER: ncuser
+secrets:
+  letsencrypt:
+    issuer: letsencrypt
+    kind: ClusterIssuer
+    secretName: nextcloud-letsencrypt-cert
+  nextcloudAdmin:
+    NEXTCLOUD_ADMIN_PASSWORD: IAmTheKingOfWorms!
+    NEXTCLOUD_ADMIN_USER: manimarco
+    secretName: nextcloud-admin-secrets
+service:
+  nextcloud:
+    name: nextcloud-svc
+  postgres:
+    name: nextcloud-postgres-svc

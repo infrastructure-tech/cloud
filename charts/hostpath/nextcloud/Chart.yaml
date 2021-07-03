@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: 1.16.0
+dependencies:
+- name: postgres
+  repository: http://10.4.4.2
+  version: 0.2.3
+description: Big poofy things in the sky
+name: nextcloud
+type: application
+version: 0.1.6

@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 1.16.0
+description: TrAAAAAAAAfick
+name: traefik
+type: application
+version: 0.3.5

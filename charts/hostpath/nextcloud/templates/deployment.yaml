@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+  name: {{ .Release.Name }}-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        affinity: {{ .Release.Name }}-app
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            {{- range .Values.app.deployment.affinity.podAffinity.labelSelectors }}
+            - labelSelector:
+                {{- range .labelSelector.matchExpressions }}
+                matchExpressions:
+                  - key: {{ .key }}
+                    operator: {{ .operator }}
+                    values:
+                      {{- range .values }}
+                      - {{ tpl . $ }}
+                        {{- end }}
+              {{- end }}
+              topologyKey: {{ .labelSelector.topologyKey }}
+              namespaces:
+                - {{ $.Release.Namespace }}
+          {{- end }}
+      volumes:
+        - name: {{ .Release.Name }}-data
+          hostPath:
+            path: {{ tpl .Values.app.deployment.hostPath.mountPath . }}
+            type: DirectoryOrCreate
+      containers:
+      - env:
+        - name: POSTGRES_HOST
+          value: {{ tpl (index .Values "postgres" "service" "name") . }}
+        - name: NEXTCLOUD_TRUSTED_DOMAINS
+          value: "{{ .Values.app.domain }}"
+        - name: APACHE_DISABLE_REWRITE_IP
+          value: "{{ .Values.app.deployment.env.APACHE_DISABLE_REWRITE_IP }}"
+        - name: TRUSTED_PROXIES
+          value: "{{ .Values.app.deployment.env.TRUSTED_PROXIES }}"
+        - name: POSTGRES_DB
+          value: {{ index .Values "postgres" "deployment" "db" "name" }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: DB_PASSWORD
+              name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: DB_USER
+              name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+        - name: OVERWRITEHOST
+          value: "{{ .Values.app.domain }}"
+        - name: OVERWRITEPROTOCOL
+          value: "{{ .Values.app.deployment.env.OVERWRITEPROTOCOL }}"
+        - name: NEXTCLOUD_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              key: NEXTCLOUD_ADMIN_USER
+              name: {{ .Values.secrets.nextcloudAdmin.secretName }}
+        - name: NEXTCLOUD_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: NEXTCLOUD_ADMIN_PASSWORD
+              name: {{ .Values.secrets.nextcloudAdmin.secretName }}
+        image: {{ .Values.app.deployment.image }}
+        imagePullPolicy: IfNotPresent
+        name: app
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: {{ .Release.Name }}-data
+            mountPath: /var/www/html/
+        resources:
+          requests:
+            cpu: {{ .Values.app.deployment.resources.requests.cpu }}
+            memory: {{ .Values.app.deployment.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.app.deployment.resources.limits.cpu }}
+            memory: {{ .Values.app.deployment.resources.limits.memory }}
+      restartPolicy: Always
+      priorityClassName: {{ .Values.app.deployment.priorityClass }}
