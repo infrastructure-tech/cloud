@@ -5,8 +5,8 @@ metadata:
   labels:
     app: {{ tpl .Values.deployment.name . }}
 spec:
- type: LoadBalancer
- externalTrafficPolicy: Local
+ # type: LoadBalancer
+ # externalTrafficPolicy: Local
   ports:
   - name: http
     port: 80
