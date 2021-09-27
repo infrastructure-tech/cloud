@@ -1,3 +1,4 @@
+#port: 5432 #Need fix for: https://github.com/kubernetes/kubernetes/issues/82296
 deployment:
   affinity: {}
   db:
@@ -7,7 +8,7 @@ deployment:
     mountPath: /CHANGE_ME
     name: pg-data
     volumeMountPath: /var/lib/postgresql/data
-  image: postgres:13.1-alpine
+  image: postgres:latest
   name: '{{ .Release.Name }}-postgres'
   replicas: 1
   resources:
@@ -22,5 +23,5 @@ secrets:
   DB_USER: DEFAULT_USER
   secretName: '{{ .Release.Name }}-postgres-secret'
 service:
-  name: '{{ .Release.Name }}-postgres-svc'
+  name: '{{ .Release.Name }}-postgres-service'
   type: ClusterIP

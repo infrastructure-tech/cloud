@@ -21,10 +21,6 @@ postgres:
 ```
 postgres:
   deployment:
-    affinity:
-      nodeSelectors:
-      - key: db
-        value: sync1
     resources:
       requests:
         cpu: 500m
@@ -38,8 +34,8 @@ postgres:
       auth: password
       name: NAME_GOES_HERE
     hostPath:
-      mountPath: /eons/local/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
-      name: pg-data
+      mountPath: /eons/local/{{ .Release.Namespace }}/{{ .Release.Name }}/db
+      name: db
   secrets:
     DB_PASSWORD: PASSWORD_GOES_HERE
     DB_USER: USER_GOES_HERE

@@ -3,14 +3,14 @@ kind: Service
 metadata:
   name: {{ tpl .Values.service.name . }}
   labels:
-    app: {{ tpl .Values.deployment.name . }}
+    app: {{ tpl .Values.service.name . }}
 spec:
 #  type: LoadBalancer
 #  externalTrafficPolicy: Local
   ports:
   - name: http
     port: 5432
-    targetPort: 5432
+    protocol: TCP
   selector:
     app: {{ tpl .Values.deployment.name . }}
-  type: {{ .Values.service.type }}
+  type: {{ tpl .Values.service.type . }}

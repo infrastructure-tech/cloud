@@ -23,10 +23,10 @@ spec:
           args:
             {{- range .Values.daemonset.args }}
             - {{ . }}
-          {{- end }}
+            {{- end }}
           ports:
             {{- range .Values.daemonset.ports }}
             - name: {{ .name }}
               containerPort: {{ .containerPort }}
-      {{- end }}
+            {{- end }}
       restartPolicy: Always

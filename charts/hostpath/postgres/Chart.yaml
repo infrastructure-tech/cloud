@@ -2,4 +2,4 @@ apiVersion: v2
 description: After the GRES
 name: postgres
 type: application
-version: 0.2.4
+version: 0.2.12

@@ -15,16 +15,16 @@ spec:
         app: {{ tpl .Values.deployment.name . }}
     spec:
       volumes:
-        - name: {{ .Values.deployment.hostPath.name }}
+        - name: {{ tpl .Values.deployment.hostPath.name . }}
           hostPath:
             path: {{ tpl .Values.deployment.hostPath.mountPath . }}
             type: DirectoryOrCreate
       containers:
         - name: postgres
-          image: {{ .Values.deployment.image }}
+          image: {{ tpl .Values.deployment.image . }}
           volumeMounts:
-            - mountPath: {{ .Values.deployment.hostPath.volumeMountPath }}
-              name: {{ .Values.deployment.hostPath.name }}
+            - mountPath: {{ tpl .Values.deployment.hostPath.volumeMountPath . }}
+              name: {{ tpl .Values.deployment.hostPath.name . }}
           env:
             - name: POSTGRES_USER
               valueFrom:
@@ -37,21 +37,21 @@ spec:
                   key: DB_PASSWORD
                   name: {{ tpl .Values.secrets.secretName . }}
             - name: POSTGRES_DB
-              value: {{ .Values.deployment.db.name }}
+              value: {{ tpl .Values.deployment.db.name . }}
             - name: POSTGRES_HOST_AUTH_METHOD
-              value: {{ .Values.deployment.db.auth }}
+              value: {{ tpl .Values.deployment.db.auth . }}
           ports:
             - name: http
               containerPort: 5432
           resources:
             requests:
-              cpu: {{ .Values.deployment.resources.requests.cpu }}
-              memory: {{ .Values.deployment.resources.requests.memory }}
+              cpu: {{ tpl .Values.deployment.resources.requests.cpu . }}
+              memory: {{ tpl .Values.deployment.resources.requests.memory . }}
             limits:
-              cpu: {{ .Values.deployment.resources.limits.cpu }}
-              memory: {{ .Values.deployment.resources.limits.memory }}
+              cpu: {{ tpl .Values.deployment.resources.limits.cpu . }}
+              memory: {{ tpl .Values.deployment.resources.limits.memory . }}
       {{- if .Values.deployment.priorityClass }}
-      priorityClassName: {{ .Values.deployment.priorityClass }}
+      priorityClassName: {{ tpl .Values.deployment.priorityClass . }}
       {{- end }}
       {{- if .Values.deployment.affinity.nodeSelectors }}
       nodeSelector:
