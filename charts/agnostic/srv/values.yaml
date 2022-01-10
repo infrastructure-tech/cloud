@@ -1,6 +1,6 @@
 deployment:
   image: eons/img_webserver:latest
-  name: 'srv_{{ .Release.Name }}'
+  name: 'srv-{{ .Release.Name }}'
   priorityClass: dev-low
   resources:
     limits:
