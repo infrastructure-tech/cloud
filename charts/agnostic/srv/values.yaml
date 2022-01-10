@@ -1,0 +1,16 @@
+deployment:
+  image: eons/img_webserver:latest
+  name: 'srv_{{ .Release.Name }}'
+  priorityClass: dev-low
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2000Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+domain: INVALID
+secrets:
+  letsencrypt:
+    issuer: letsencrypt-staging
+    kind: ClusterIssuer

@@ -1,0 +1,5 @@
+apiVersion: v2
+description: storage-agnostic web server by eons.
+name: srv
+type: application
+version: 0.0.1
