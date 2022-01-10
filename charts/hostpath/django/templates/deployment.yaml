@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ tpl .Values.deployment.name . }}
+  labels:
+    app: {{ tpl .Values.deployment.name . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ tpl .Values.deployment.name . }}
+  template:
+    metadata:
+      labels:
+        app: {{ tpl .Values.deployment.name . }}
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values: [{{ .Release.Name }}-postgres]
+            topologyKey: kubernetes.io/hostname
+      containers:
+        - name: django
+          image: {{ .Values.deployment.image }}
+          imagePullPolicy: Always
+          env:
+          - name: API_PG_DB
+            value: {{ .Release.Name }}-db
+          - name: API_PG_USER
+            value: {{ .Values.postgres.secrets.DB_USER }}
+          - name: API_PG_PASSWORD
+            value: {{ .Values.postgres.secrets.DB_PASSWORD }}
+          - name: API_PG_HOST
+            value: {{ .Release.Name }}-postgres-service
+          - name: API_PG_PORT
+            value: '5432'
+          - name: API_SECRET_KEY
+            value: {{ .Values.deployment.secrets.secret_key }}
+          ports:
+          - name: django
+            containerPort: 80
+#          volumeMounts:
+#          - name: {{ .Values.deployment.hostPath.name }}
+#            mountPath: /var/www/html
+          resources:
+            requests:
+              cpu: {{ tpl .Values.deployment.resources.requests.cpu . }}
+              memory: {{ tpl .Values.deployment.resources.requests.memory . }}
+            limits:
+              cpu: {{ tpl .Values.deployment.resources.limits.cpu . }}
+              memory: {{ tpl .Values.deployment.resources.limits.memory . }}
+      {{- if .Values.deployment.hostAliases }}
+      hostAliases:
+      {{- range .Values.deployment.hostAliases }}
+      - ip: {{ .ip }}
+        hostnames:
+          - {{ .hostname }}
+      {{- end }}
+      {{- end }}
+#      volumes:
+#      - name: {{ .Values.deployment.hostPath.name }}
+#        hostPath:
+#          path: {{ tpl .Values.deployment.hostPath.mountPath . }}
+#          type: DirectoryOrCreate
+      priorityClassName: {{ tpl .Values.deployment.priorityClass . }}

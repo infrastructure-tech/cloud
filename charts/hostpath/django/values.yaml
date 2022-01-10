@@ -1,0 +1,65 @@
+deployment:
+  affinity:
+    podAffinity:
+      labelSelectors:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - '{{ tpl (index .Values "postgres" "deployment" "name") . }}'
+          topologyKey: kubernetes.io/hostname
+  configmap:
+    env:
+      filename: api.env
+      name: env
+      path: /opt/
+  hostPath:
+    mountPath: /eons/local/django/{{ .Release.Namespace }}/{{ .Release.Name }}/app
+    name: app
+  image: CHANGEME
+  name: '{{ .Release.Name }}-django'
+#  hostAliases:
+#  - hostname:
+#    ip:
+  priorityClass: dev-low
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2000Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  secrets:
+    secret_key: CHANGEME
+
+domain: CHANGEME
+
+secrets:
+  letsencrypt:
+    issuer: letsencrypt-staging
+    kind: ClusterIssuer
+
+postgres:
+  deployment:
+    priorityClass: dev-low
+    affinity:
+      nodeSelectors:
+      - key: serve
+        value: dev
+    db:
+      auth: password
+      name: '{{ .Release.Name }}-db'
+    hostPath:
+      mountPath: /eons/local/django/{{ .Release.Namespace }}/{{ .Release.Name }}/db
+      name: db
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2000Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+  secrets:
+    DB_USER: CHANGEME
+    DB_PASSWORD: CHANGEME
