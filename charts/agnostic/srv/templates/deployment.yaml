@@ -16,6 +16,13 @@ spec:
       containers:
       - image: {{ .Values.deployment.image }}
         name: server
+        {{- if .Values.deployment.env }}
+        env:
+          {{- range .Values.deployment.env }}
+          - name: {{.name }}
+            value: {{ .value }}
+          {{- end }}
+        {{- end }}
         ports:
         - containerPort: 80
           name: http
