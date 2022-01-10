@@ -5,27 +5,33 @@ daemonset:
   - --api.dashboard=true
   - --entryPoints.web.address=:80
   - --entryPoints.websecure.address=:443
-  - --entryPoints.acme.address=:8089
-  - --entryPoints.internal.address=:8081
-  - --entryPoints.matrix-fed.address=:8448
+  # - --entryPoints.acme.address=:8089
+  # - --entryPoints.internal.address=:8081
+  # - --entryPoints.matrix-fed.address=:8448
   - --providers.kubernetescrd
   - --providers.kubernetesIngress=true
   - --providers.kubernetesIngress.ingressClass=traefik-cert-manager
   - --ping
-  image: traefik:latest
+
+  #NEED TO UPDATE CRDS FOR 2.5+
+  # image: traefik:latest
+  image: traefik:v2.4
+  
   ports:
-  - containerPort: 80
-    name: web
-  - containerPort: 443
-    name: websecure
+  - name: web
+    containerPort: 80
+    nodePort: 31080
+  - name: websecure
+    containerPort: 443
+    nodePort: 31443
   - containerPort: 8080
     name: admin
-  - containerPort: 8089
-    name: acme
-  - containerPort: 8081
-    name: internal
-  - containerPort: 8448
-    name: matrix-fed
+  # - containerPort: 8089
+  #   name: acme
+  # - containerPort: 8081
+  #   name: internal
+  # - containerPort: 8448
+  #   name: matrix-fed
   serviceAccountName: traefik-ingress-controller
 dashboard:
   entryPoints:
@@ -36,5 +42,5 @@ dashboard:
     services:
     - name: traefik
       port: 8080
-service:
-  loadBalancerIP: 10.4.4.1
+# service:
+#   loadBalancerIP: 10.4.4.1

@@ -3,13 +3,14 @@ kind: Service
 metadata:
   name: {{ $.Release.Name }}
 spec:
-  externalTrafficPolicy: Local
+  # externalTrafficPolicy: Local
   ports:
     {{- range .Values.daemonset.ports }}
     - name: {{ .name }}
       port: {{ .containerPort }}
+      nodePort: {{ .nodePort }}
     {{- end }}
   selector:
     app: {{ $.Release.Name }}
-  type: LoadBalancer
-  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  # type: LoadBalancer
+  # loadBalancerIP: {{ .Values.service.loadBalancerIP }}
