@@ -4,6 +4,6 @@ metadata:
   name: {{ .Values.deployment.configmap.php.name }}
 data:
   {{ .Values.deployment.configmap.php.filename }}: |
-    upload_max_filesize = 256M
-    post_max_size = 256M
+    upload_max_filesize = 1024M
+    post_max_size = 1024M
     max_execution_time = 600
