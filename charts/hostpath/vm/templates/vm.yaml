@@ -1,0 +1,113 @@
+{{ $values := $.Values }}
+  {{ $replicaCount := .Values.replicaCount | int }}
+  {{ $ringname := tpl .Values.ring.name . }}
+  {{ $ringnum := .Values.ring.number | int }}
+  {{ $ports := .Values.ports }}
+
+  {{ range $i, $e := until $replicaCount }}
+
+  {{ $counter := add $i 1}}
+
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: "{{ $ringname }}-{{ $counter }}"
+  generation: 1
+  labels:
+    app: "{{ $ringname }}-{{ $counter }}"
+    kubevirt.io/os: linux
+spec:
+  running: {{ $values.running }}
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: "{{ $ringname }}"
+    spec:
+      domain:
+        cpu:
+          cores: {{ $values.resources.requests.dedicated.cpu }}
+        devices:
+          disks:
+{{/*            - name: containerdisk*/}}
+{{/*              bootOrder: 2*/}}
+{{/*              disk: {}*/}}
+            - name: disk0
+              bootOrder: 1
+              disk:
+                bus: sata
+            - name: cloudinit
+              cdrom:
+                bus: sata
+                readonly: true
+          interfaces:
+            - name: default
+              bridge: {}
+        machine:
+          type: {{ $values.machine.type }}
+        resources:
+          requests:
+            memory: {{ $values.resources.requests.memory }}
+            cpu: {{ $values.resources.requests.cpu }}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+{{/*        - name: disk0*/}}
+{{/*          hostDisk:*/}}
+{{/*            capacity: {{ $values.resources.requests.storage }}*/}}
+{{/*            path: "{{ $values.hostpath }}/vm/{{ $ringname }}/{{ $counter }}/img_{{ $counter }}-{{ $ringname }}.img"*/}}
+{{/*            type: DiskOrCreate*/}}
+{{/*        - name: containerdisk*/}}
+{{/*          containerDisk:*/}}
+{{/*            image: {{ $values.initdisk.image }}*/}}
+        - name: disk0
+          dataVolume:
+            name: ubuntu-dv
+        - name: cloudinit
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              hostname: "{{ $ringname }}-{{ $counter }}"
+              users:
+              - name: proto
+                ssh-authorized-keys:
+                - {{ $values.ssh.publicKey }}
+                sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                groups: sudo
+                shell: /bin/bash
+              chpasswd:
+                list: |
+                  root:toor
+                expire: False
+  dataVolumeTemplates:
+  - metadata:
+      name: ubuntu-dv
+    spec:
+      pvc:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+      source:
+        http:
+          url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ $ringname }}-{{ $counter }}-svc"
+spec:
+{{/*  externalTrafficPolicy: Cluster*/}}
+  ports:
+  {{- range $ports }}
+    - name: "{{ .name }}"
+      port: {{ .port }}
+      targetPort: {{ .targetport }}
+  {{- end }}
+  selector:
+    app: "{{ $ringname }}-{{ $counter }}"
+  type: LoadBalancer
+  loadBalancerIP: "10.4.4.{{ $ringnum }}{{ $counter }}"
+---
+  {{ end }}

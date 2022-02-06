@@ -1,0 +1,27 @@
+ring:
+  name: '{{ .Release.Name }}'
+  number: 1
+replicaCount: 1
+running: true
+hostpath: "/eons/local/"
+resources:
+  requests:
+    memory: 4096Mi
+    cpu: 2000m
+    storage: 10Gi
+    dedicated:
+      cpu: 1
+initdisk:
+  image: "eons/img_ubuntu20.04:latest"
+  size: 4Gi
+ssh:
+  publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDSVkocUtRoZ9o01SCGhJcyhS97Bc7BUNiabfnrAf3aEeYJqvNX/c1xQn2rBmnzP95HxyXqekVKlLhfFe6aplwt9C2JbTBM8LEoj5G3vYpL3ohmMcyhCHz0Jxa2o5hHCPbAXXCgsVi91114OkSlvEOKAp1CQz03c3OiEC1vT4Nt38uVQbE36MobEKPBGKDbcQ9ZFuHcDK0VuIUzXpxb6BFGol3eMPzm2GkpWa1DOvctPMKxVfFDeavDXAOb++jkRRqscLQVlzx704TTgkULI5k+l0+HnWs6X6cbP9Ji8goFyc8S/bOKecU1LNQd6+iW31lMMZMgKkg0aWiDLK0X5QH0z3P4vcLvJVoAOzHGR9goa7+YrKkRFVVVoKkyH3f73fe6tmqhivgNS6Dn2V50tSLyf+mreZL40xhLOShNHGxpUZZTPqgLSnyW0PDvOPKes942nvDsty3cqzbjjilnNGomjC+tMzLLiaVMhyedkvi4rqaBeCKCvsidk+LGrdCYMfY1IrlpUZxJLbicew/udt7e3b9SAyDdEWl5I4ak+av9Ud1z5KMC4NnVsfGaUk2vIUciWRZL6G8sz7GJkjbrVU8Z9/T4HUW2xvhp04KTVlSDWqWe7SkYPAbsTEQchMApUnVNH1Fx02NHNTvN+KIfwKfkcB5APyHzZLRSsu9vSIhuAQ=="
+machine:
+  type: q35
+ports:
+  - name: ssh
+    port: 34322
+    targetport: 22
+  - name: vpn
+    port: 9999
+    targetport: 9999
