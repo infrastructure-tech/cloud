@@ -19,7 +19,7 @@ spec:
         {{- if .Values.deployment.env }}
         env:
           {{- range .Values.deployment.env }}
-          - name: {{.name }}
+          - name: {{ .name }}
             value: {{ .value }}
           {{- end }}
         {{- end }}
