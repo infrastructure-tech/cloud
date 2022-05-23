@@ -42,6 +42,7 @@ spec:
           interfaces:
             - name: default
               bridge: {}
+              macAddress: {{ $values.machine.mac }}
         machine:
           type: {{ $values.machine.type }}
         resources:
@@ -106,7 +107,8 @@ spec:
       targetPort: {{ .targetport }}
   {{- end }}
   selector:
-    app: "{{ $ringname }}-{{ $counter }}"
+{{/*    app: "{{ $ringname }}-{{ $counter }}"*/}}
+    kubevirt.io/domain: {{ $ringname }}
   type: LoadBalancer
   loadBalancerIP: "10.4.4.{{ $ringnum }}{{ $counter }}"
 ---

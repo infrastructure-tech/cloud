@@ -13,7 +13,8 @@ fi
 
 namespace="wp-$site"
 release="$site"
-chart="cm/wordpress"
+#chart="cm/wordpress"
+chart="/home/eons/git/fog/charts/hostpath/wordpress"
 
 valuesPath="/home/eons/inf/k8s/helm/release/wp/${release}"
 valuesFile="${valuesPath}/values.yaml"
@@ -44,6 +45,11 @@ if [ ! -f $valuesFile ]; then
     echo "ERROR: COULD NOT CREATE VALUES FILE"
     exit 1
 fi
+
+echo "#### values file is ####"
+echo "# ${valuesFile}"
+cat $valuesFile
+echo "\n########################"
 
 existenceCheck=$(helm ls -A | grep $namespace | grep $release)
 echo $existenceCheck
