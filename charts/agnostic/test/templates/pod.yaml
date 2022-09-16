@@ -5,12 +5,20 @@ metadata:
   labels:
     app: {{ $.Release.Name }}
 spec:
+  nodeName: e0504
   containers:
-      - name: test-container
-        image: {{ .Values.image }}
-        imagePullPolicy: Always
-        ports:
-          {{- range .Values.ports }}
-          - name: {{ .name }}
-            containerPort: {{ .containerPort }}
-          {{- end }}
+  - name: test-container
+    image: {{ .Values.image }}
+    imagePullPolicy: Always
+    ports:
+      {{- range .Values.ports }}
+      - name: {{ .name }}
+        containerPort: {{ .containerPort }}
+      {{- end }}
+    volumeMounts:
+    - name: host
+      mountPath: /host
+  volumes:
+  - name: host
+    hostPath:
+      path: /home/ark

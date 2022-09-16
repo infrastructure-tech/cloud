@@ -4,17 +4,17 @@
   {{ $ringnum := .Values.ring.number | int }}
   {{ $ports := .Values.ports }}
 
-  {{ range $i, $e := until $replicaCount }}
+{{/*  {{ range $i, $e := until $replicaCount }}*/}}
 
-  {{ $counter := add $i 1}}
+{{/*  {{ $counter := add $i 1}}*/}}
 
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: "{{ $ringname }}-{{ $counter }}"
+  name: "{{ $ringname }}"
   generation: 1
   labels:
-    app: "{{ $ringname }}-{{ $counter }}"
+    app: "{{ $ringname }}"
     kubevirt.io/os: linux
 spec:
   running: {{ $values.running }}
@@ -28,9 +28,8 @@ spec:
           cores: {{ $values.resources.requests.dedicated.cpu }}
         devices:
           disks:
-{{/*            - name: containerdisk*/}}
-{{/*              bootOrder: 2*/}}
-{{/*              disk: {}*/}}
+            - name: extra
+              disk: {}
             - name: disk0
               bootOrder: 1
               disk:
@@ -53,14 +52,11 @@ spec:
         - name: default
           pod: {}
       volumes:
-{{/*        - name: disk0*/}}
-{{/*          hostDisk:*/}}
-{{/*            capacity: {{ $values.resources.requests.storage }}*/}}
-{{/*            path: "{{ $values.hostpath }}/vm/{{ $ringname }}/{{ $counter }}/img_{{ $counter }}-{{ $ringname }}.img"*/}}
-{{/*            type: DiskOrCreate*/}}
-{{/*        - name: containerdisk*/}}
-{{/*          containerDisk:*/}}
-{{/*            image: {{ $values.initdisk.image }}*/}}
+        - name: extra
+          hostDisk:
+            capacity: {{ $values.resources.requests.storage }}
+            path: "{{ $values.hostpath }}/vm/{{ .Release.Namespace }}/{{ $ringname }}/img_extra_{{ $ringname }}.img"
+            type: DiskOrCreate
         - name: disk0
           dataVolume:
             name: ubuntu-dv
@@ -68,7 +64,7 @@ spec:
           cloudInitNoCloud:
             userData: |
               #cloud-config
-              hostname: "{{ $ringname }}-{{ $counter }}"
+              hostname: "{{ $ringname }}"
               users:
               - name: proto
                 ssh-authorized-keys:
@@ -80,6 +76,16 @@ spec:
                 list: |
                   root:toor
                 expire: False
+              write_files:
+              - path: /etc/run/config
+                encoding: b64
+                permissions: "0644"
+                content: "{{ $values.run.config }}"
+                owner: proto:proto
+              - path: /etc/run/image
+                permissions: "0644"
+                content: "{{ $values.run.image }}"
+                owner: proto:proto
   dataVolumeTemplates:
   - metadata:
       name: ubuntu-dv
@@ -89,7 +95,7 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 10Gi
+            storage: {{ $values.resources.requests.storage }}
       source:
         http:
           url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
@@ -97,7 +103,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ $ringname }}-{{ $counter }}-svc"
+  name: "{{ $ringname }}-svc"
 spec:
 {{/*  externalTrafficPolicy: Cluster*/}}
   ports:
@@ -107,9 +113,9 @@ spec:
       targetPort: {{ .targetport }}
   {{- end }}
   selector:
-{{/*    app: "{{ $ringname }}-{{ $counter }}"*/}}
+{{/*    app: "{{ $ringname }}"*/}}
     kubevirt.io/domain: {{ $ringname }}
   type: LoadBalancer
-  loadBalancerIP: "10.4.4.{{ $ringnum }}{{ $counter }}"
+  loadBalancerIP: "10.4.4.{{ $ringnum }}"
 ---
-  {{ end }}
+{{/*  {{ end }}*/}}

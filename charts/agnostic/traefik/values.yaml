@@ -4,8 +4,13 @@ daemonset:
   - --accesslog
   - --api.dashboard=true
   - --entryPoints.web.address=:80
+  - --entryPoints.web.forwardedHeaders.insecure
   - --entryPoints.websecure.address=:443
-  # - --entryPoints.acme.address=:8089
+  - --entryPoints.websecure.forwardedHeaders.insecure
+  - --entryPoints.tinc.address=:655
+  - --entryPoints.tinc.forwardedHeaders.insecure
+#  - --entryPoints.admin.address=:8080
+    # - --entryPoints.acme.address=:8089
   # - --entryPoints.internal.address=:8081
   # - --entryPoints.matrix-fed.address=:8448
   - --providers.kubernetescrd
@@ -15,7 +20,7 @@ daemonset:
 
   #NEED TO UPDATE CRDS FOR 2.5+
   # image: traefik:latest
-  image: traefik:v2.4
+  image: traefik:latest
   
   ports:
   - name: web
@@ -33,14 +38,16 @@ daemonset:
   # - containerPort: 8448
   #   name: matrix-fed
   serviceAccountName: traefik-ingress-controller
+
 dashboard:
-  entryPoints:
-  - admin
+#  entryPoints:
+#  - admin
   routes:
   - kind: Rule
     match: Host(`traefik`)
     services:
     - name: traefik
       port: 8080
-# service:
-#   loadBalancerIP: 10.4.4.1
+
+service:
+  loadBalancerIP: 10.4.4.1

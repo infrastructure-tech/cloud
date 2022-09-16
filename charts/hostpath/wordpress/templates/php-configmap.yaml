@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.deployment.configmap.php.name }}
+  name: {{ tpl .Values.deployment.configmap.php.name . }}
 data:
   {{ .Values.deployment.configmap.php.filename }}: |
     upload_max_filesize = 1024M

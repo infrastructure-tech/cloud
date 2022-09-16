@@ -1,8 +1,8 @@
 deployment:
   configmap:
     php:
+      name: '{{ .Release.Name }}-custom-php'
       filename: custom-php.ini
-      name: custom-php
       path: /usr/local/etc/php/conf.d
   hostPath:
     mountPath: /eons/local/wp/{{ .Release.Name }}/app

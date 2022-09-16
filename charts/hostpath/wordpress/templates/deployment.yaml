@@ -47,7 +47,7 @@ spec:
         volumeMounts:
         - name: {{ .Values.deployment.hostPath.name }}
           mountPath: /var/www/html
-        - name: {{ .Values.deployment.configmap.php.name }}
+        - name: {{ tpl .Values.deployment.configmap.php.name . }}
           mountPath: {{ .Values.deployment.configmap.php.path }}/{{ .Values.deployment.configmap.php.filename }}
           subPath: {{ .Values.deployment.configmap.php.filename }}
         resources:
@@ -65,6 +65,6 @@ spec:
         # persistentVolumeClaim:
         #   claimName: {{ tpl .Values.deployment.name . }}-pvc
       - configMap:
-          name: {{ .Values.deployment.configmap.php.name }}
-        name: {{ .Values.deployment.configmap.php.name }}
+          name: {{ tpl .Values.deployment.configmap.php.name . }}
+        name: {{ tpl .Values.deployment.configmap.php.name . }}
       priorityClassName: {{ tpl .Values.deployment.priorityClass . }}
