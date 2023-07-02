@@ -19,7 +19,7 @@ items:
           - ''
         resources:
           - pods
-          - namespaces1
+          - namespaces
           - nodes
         verbs:
           - get
@@ -125,6 +125,8 @@ items:
               command:
                 - /home/weave/init.sh
               env:
+                - name: IPALLOC_RANGE
+                  value: 10.111.1.0/24
               securityContext:
                 privileged: true
               volumeMounts:
@@ -144,6 +146,8 @@ items:
               command:
                 - /home/weave/launch.sh
               env:
+                - name: IPALLOC_RANGE
+                  value: 10.111.1.0/24
                 - name: INIT_CONTAINER
                   value: "true"
                 - name: HOSTNAME
@@ -177,6 +181,8 @@ items:
                   readOnly: false
             - name: weave-npc
               env:
+                - name: IPALLOC_RANGE
+                  value: 10.111.1.0/24
                 - name: HOSTNAME
                   valueFrom:
                     fieldRef:
