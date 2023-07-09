@@ -1,0 +1,104 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: extra
+value: 1
+globalDefault: false
+description: extraneous and possibly unnecessary
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: dev-low
+value: 10
+globalDefault: false
+description: Lowest development priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: dev-medium
+value: 12
+globalDefault: false
+description: Medium development priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: dev-high
+value: 14
+globalDefault: false
+description: Highest development priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pre-low
+value: 20
+globalDefault: false
+description: Lowest pre-production priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pre-medium
+value: 22
+globalDefault: false
+description: Medium pre-production priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pre-high
+value: 24
+globalDefault: false
+description: Highest pre-production priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: prod-low
+value: 30
+globalDefault: false
+description: Lowest production priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: prod-medium
+value: 32
+globalDefault: false
+description: Medium production priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: prod-high
+value: 34
+globalDefault: false
+description: Highest production priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: crit-low
+value: 40
+globalDefault: false
+description: Lowest critical priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: crit-medium
+value: 42
+globalDefault: false
+description: Medium critical priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: crit-high
+value: 44
+globalDefault: false
+description: Highest critical priority
+---
