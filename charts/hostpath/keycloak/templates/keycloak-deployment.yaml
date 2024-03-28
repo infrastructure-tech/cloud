@@ -35,35 +35,42 @@ spec:
       containers:
       - name: keycloak
         image: {{ .Values.app.deployment.image }}
+        args: {{ .Values.app.deployment.args }}
         env:
+        # - name: KC_LOG_LEVEL
+        #   value: DEBUG
+        - name: KC_HOSTNAME_STRICT_HTTPS
+          value: "true"
+        - name: KC_HOSTNAME_URL
+          value: {{ .Values.app.url }}
+        - name: KC_HOSTNAME_ADMIN_URL
+          value: {{ .Values.app.url }}
+        - name: KC_PROXY
+          value: passthrough
         - name: KEYCLOAK_STATISTICS
           value: {{ .Values.app.deployment.env.KEYCLOAK_STATISTICS }}
-        - name: KEYCLOAK_USER
+        - name: KEYCLOAK_ADMIN
           valueFrom:
             secretKeyRef:
-              key: KEYCLOAK_USER
+              key: KEYCLOAK_ADMIN
               name: {{ .Values.secrets.admin.secretName }}
-        - name: KEYCLOAK_PASSWORD
+        - name: KEYCLOAK_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
-              key: KEYCLOAK_PASSWORD
+              key: KEYCLOAK_ADMIN_PASSWORD
               name: {{ .Values.secrets.admin.secretName }}
-        - name: PROXY_ADDRESS_FORWARDING
+        - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
           value: "true"
-        - name: DB_VENDOR
-          value: {{ .Values.app.deployment.env.DB_VENDOR }}
-        - name: DB_DATABASE
-          value: {{ index .Values "postgres" "postgres" "deployment" "db" "name" }}
-        - name: DB_ADDR
-          value: {{ tpl (index .Values "postgres" "postgres" "service" "name") . }}
-        - name: DB_PORT
-          value: "5432"
-        - name: DB_USER
+        - name: KC_DB
+          value: {{ .Values.app.deployment.env.KC_DB }}
+        - name: KC_DB_URL
+          value: {{ .Values.app.deployment.env.KC_DB_URL }}
+        - name: KC_DB_USERNAME
           valueFrom:
             secretKeyRef:
               key: DB_USER
               name: {{ tpl (index .Values "postgres" "postgres" "secrets" "secretName") . }}
-        - name: DB_PASSWORD
+        - name: KC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
               key: DB_PASSWORD
@@ -73,5 +80,5 @@ spec:
           containerPort: 8080
         readinessProbe:
           httpGet:
-            path: /auth/realms/master
+            path: /
             port: 8080

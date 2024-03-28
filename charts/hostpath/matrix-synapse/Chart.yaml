@@ -1,9 +1,0 @@
-apiVersion: v2
-dependencies:
-- name: postgres
-  repository: http://10.4.4.2
-  version: 0.2.3
-description: See How Deep The Rabiit Whole Glows
-name: matrix-synapse
-type: application
-version: 0.1.8

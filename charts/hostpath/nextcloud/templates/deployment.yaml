@@ -40,6 +40,9 @@ spec:
           hostPath:
             path: {{ tpl .Values.app.deployment.hostPath.mountPath . }}
             type: DirectoryOrCreate
+      dnsConfig:
+        nameservers:
+        - 1.1.1.1
       containers:
       - env:
         - name: POSTGRES_HOST

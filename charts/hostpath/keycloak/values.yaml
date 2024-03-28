@@ -1,5 +1,6 @@
 app:
   deployment:
+    args: ["start-dev"] # Always use dev, since cert-manager handles SSL, etc.
     affinity:
       podAffinity:
         labelSelectors:
@@ -12,11 +13,13 @@ app:
                 "name") . }}'
             topologyKey: kubernetes.io/hostname
     env:
-      DB_VENDOR: postgres
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-postgres-svc:5432/keycloak
       KEYCLOAK_STATISTICS: all
-    image: jboss/keycloak:11.0.1
+    image: quay.io/keycloak/keycloak:24.0.1
     replicas: 1
-  domain: sso.eons.dev
+  domain: CHANGEME
+  url: https://CHANGEME
 postgres:
   postgres:
     deployment:
@@ -24,15 +27,15 @@ postgres:
         auth: password
         name: keycloak
       hostPath:
-        mountPath: /eons/local/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
+        mountPath: /cluster/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
         name: pg-data
     secrets:
-      DB_PASSWORD: 0XS3gTo5n7It8wwdk9EnPkS9nSq3oeZD
+      DB_PASSWORD: CHANGEME
       DB_USER: keycloakuser
 secrets:
   admin:
-    KEYCLOAK_PASSWORD: ToSeeThroughTheEyeOfMagnus!
-    KEYCLOAK_USER: magnus
+    KEYCLOAK_ADMIN_PASSWORD: CHANGEME
+    KEYCLOAK_ADMIN: CHANGEME
     secretName: keycloak-admin-secret
   letsencrypt:
     issuer: letsencrypt

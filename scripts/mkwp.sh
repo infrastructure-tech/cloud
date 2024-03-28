@@ -23,9 +23,9 @@ fi
 namespace="$1"
 release="$site"
 #chart="cm/wordpress"
-chart="/home/eons/git/fog/charts/hostpath/wordpress"
+chart="$HOME/git/infrastructure-tech/web/charts/hostpath/wordpress"
 
-valuesPath="/home/eons/inf/k8s/helm/release/wp/${org}"
+valuesPath="$HOME/inf/k8s/helm/release/wp/${org}"
 valuesFile="${valuesPath}/${release}.yaml"
 
 if [ ! -f $valuesFile ]; then

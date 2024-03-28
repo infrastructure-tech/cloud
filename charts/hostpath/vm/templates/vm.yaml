@@ -1,121 +1,77 @@
-{{ $values := $.Values }}
-  {{ $replicaCount := .Values.replicaCount | int }}
-  {{ $ringname := tpl .Values.ring.name . }}
-  {{ $ringnum := .Values.ring.number | int }}
-  {{ $ports := .Values.ports }}
-
-{{/*  {{ range $i, $e := until $replicaCount }}*/}}
-
-{{/*  {{ $counter := add $i 1}}*/}}
-
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: "{{ $ringname }}"
+  name: "{{ tpl .Values.host.name . }}"
   generation: 1
   labels:
-    app: "{{ $ringname }}"
+    app: "{{ tpl .Values.host.name . }}"
     kubevirt.io/os: linux
 spec:
-  running: {{ $values.running }}
+  running: true
   template:
     metadata:
       labels:
-        kubevirt.io/domain: "{{ $ringname }}"
+        kubevirt.io/domain: "{{ tpl .Values.host.name . }}"
     spec:
       domain:
-        cpu:
-          cores: {{ $values.resources.requests.dedicated.cpu }}
         devices:
           disks:
-            - name: extra
-              disk: {}
-            - name: disk0
+            - name: hostdisk
               bootOrder: 1
               disk:
-                bus: sata
-            - name: cloudinit
+                bus: virtio
+            - name: "cloudinit"
               cdrom:
-                bus: sata
+                bus: "sata"
                 readonly: true
           interfaces:
-            - name: default
+            - name: "default"
               bridge: {}
-              macAddress: {{ $values.machine.mac }}
+              macAddress: {{ .Values.host.machine.mac }}
         machine:
-          type: {{ $values.machine.type }}
+          type: {{ .Values.host.machine.type }}
         resources:
           requests:
-            memory: {{ $values.resources.requests.memory }}
-            cpu: {{ $values.resources.requests.cpu }}
+            memory: {{ .Values.host.resources.requests.memory }}
+            cpu: {{ .Values.host.resources.requests.cpu }}
       networks:
-        - name: default
+        - name: "default"
           pod: {}
       volumes:
-        - name: extra
+        # - hostDisk:
+        #     capacity: 1Gi
+        #     path: /fss/disk.img
+        #     type: DiskOrCreate
+        #   name: hostdisk
+        - name: hostdisk
           hostDisk:
-            capacity: {{ $values.resources.requests.storage }}
-            path: "{{ $values.hostpath }}/vm/{{ .Release.Namespace }}/{{ $ringname }}/img_extra_{{ $ringname }}.img"
+            path: "{{ .Values.host.hostpath }}/{{ tpl .Values.host.name . }}.img"
             type: DiskOrCreate
-        - name: disk0
-          dataVolume:
-            name: ubuntu-dv
-        - name: cloudinit
+          # containerDisk:
+          #   image: {{ .Values.host.image }}
+        - name: "cloudinit"
           cloudInitNoCloud:
             userData: |
               #cloud-config
-              hostname: "{{ $ringname }}"
+              hostname: "{{ tpl .Values.host.name . }}"
               users:
               - name: proto
-                ssh-authorized-keys:
-                - {{ $values.ssh.publicKey }}
                 sudo: ['ALL=(ALL) NOPASSWD:ALL']
                 groups: sudo
                 shell: /bin/bash
               chpasswd:
                 list: |
+                  proto:toor
                   root:toor
                 expire: False
               write_files:
-              - path: /etc/run/config
-                encoding: b64
-                permissions: "0644"
-                content: "{{ $values.run.config }}"
-                owner: proto:proto
-              - path: /etc/run/image
-                permissions: "0644"
-                content: "{{ $values.run.image }}"
-                owner: proto:proto
-  dataVolumeTemplates:
-  - metadata:
-      name: ubuntu-dv
-    spec:
-      pvc:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: {{ $values.resources.requests.storage }}
-      source:
-        http:
-          url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: "{{ $ringname }}-svc"
-spec:
-{{/*  externalTrafficPolicy: Cluster*/}}
-  ports:
-  {{- range $ports }}
-    - name: "{{ .name }}"
-      port: {{ .port }}
-      targetPort: {{ .targetport }}
-  {{- end }}
-  selector:
-{{/*    app: "{{ $ringname }}"*/}}
-    kubevirt.io/domain: {{ $ringname }}
-  type: LoadBalancer
-  loadBalancerIP: "10.4.4.{{ $ringnum }}"
----
-{{/*  {{ end }}*/}}
+              # - path: /guest/image
+              #   permissions: "0644"
+              #   content: "{{ .Values.guest.image }}"
+              #   owner: proto:proto
+              # - path: /guest/rclone
+              #   encoding: b64
+              #   permissions: "0644"
+              #   content: "{{ .Values.guest.rclone }}"
+              #   owner: proto:proto
+        

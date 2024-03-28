@@ -1,0 +1,42 @@
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: {{ .Release.Name }}
+# spec:
+#   entryPoints:
+#     - websecure
+#   routes:
+#   - kind: Rule
+#     match: Host(`{{ .Values.app.domain }}`)
+#     middlewares:
+#       - name: https-redirect
+#         namespace: default
+#     services:
+#     - name: {{ .Values.service.nextcloud.name }}
+#       port: 80
+#   tls:
+#     secretName: {{ .Values.secrets.letsencrypt.secretName }}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.app.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.nextcloud.name }}
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - {{ .Values.app.domain }}
+    secretName: {{ .Values.secrets.letsencrypt.secretName }}

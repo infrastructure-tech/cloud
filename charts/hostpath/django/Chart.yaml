@@ -1,9 +1,0 @@
-apiVersion: v2
-dependencies:
-- name: postgres
-  repository: http://10.4.4.2
-  version: 0.2.12
-description: You go Jane!!
-name: django
-type: application
-version: 0.0.8

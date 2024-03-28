@@ -1,0 +1,40 @@
+{{- range $p := $.Values.host.ports }}
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: '{{ tpl $.Values.host.name $ }}-{{ $p.name }}'
+# spec:
+#   entryPoints:
+#     - {{ $p.name }}
+#   routes:
+#   - kind: Rule
+#     match: Host(`{{ tpl $.Values.user.domain $ }}`)
+#     services:
+#     - name: {{ tpl $.Values.host.name $ }}-svc
+#       port: {{ $p.port }}
+# ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: '{{ tpl $.Values.host.name $ }}-{{ $p.name }}'
+  # annotations:
+    # cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.user.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ tpl $.Values.host.name $ }}-svc
+            port:
+              number: {{ $p.port }}
+  # tls:
+  # - hosts:
+  #   - {{ .Values.user.domain }}
+  #   secretName: {{ .Values.secrets.letsencrypt.secretName }}
+---
+{{- end }}

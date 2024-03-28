@@ -1,5 +1,0 @@
-apiVersion: v2
-description: Open those enormous jaws!
-name: access
-type: application
-version: 0.1.0

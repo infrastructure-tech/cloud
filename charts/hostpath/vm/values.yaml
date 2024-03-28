@@ -1,29 +1,18 @@
-ring:
-  name: '{{ .Release.Name }}'
-  number: 5
-replicaCount: 1
-running: true
-hostpath: "/eons/local/"
-resources:
-  requests:
-    memory: 2048Mi
-    cpu: 1000m
-    storage: 8Gi
-    extraStorage: 2Gi
-    dedicated:
-      cpu: 1
-initdisk:
-  image: "eons/img_ubuntu20.04:latest"
-  size: 4Gi
-ssh:
-  publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDSVkocUtRoZ9o01SCGhJcyhS97Bc7BUNiabfnrAf3aEeYJqvNX/c1xQn2rBmnzP95HxyXqekVKlLhfFe6aplwt9C2JbTBM8LEoj5G3vYpL3ohmMcyhCHz0Jxa2o5hHCPbAXXCgsVi91114OkSlvEOKAp1CQz03c3OiEC1vT4Nt38uVQbE36MobEKPBGKDbcQ9ZFuHcDK0VuIUzXpxb6BFGol3eMPzm2GkpWa1DOvctPMKxVfFDeavDXAOb++jkRRqscLQVlzx704TTgkULI5k+l0+HnWs6X6cbP9Ji8goFyc8S/bOKecU1LNQd6+iW31lMMZMgKkg0aWiDLK0X5QH0z3P4vcLvJVoAOzHGR9goa7+YrKkRFVVVoKkyH3f73fe6tmqhivgNS6Dn2V50tSLyf+mreZL40xhLOShNHGxpUZZTPqgLSnyW0PDvOPKes942nvDsty3cqzbjjilnNGomjC+tMzLLiaVMhyedkvi4rqaBeCKCvsidk+LGrdCYMfY1IrlpUZxJLbicew/udt7e3b9SAyDdEWl5I4ak+av9Ud1z5KMC4NnVsfGaUk2vIUciWRZL6G8sz7GJkjbrVU8Z9/T4HUW2xvhp04KTVlSDWqWe7SkYPAbsTEQchMApUnVNH1Fx02NHNTvN+KIfwKfkcB5APyHzZLRSsu9vSIhuAQ=="
-machine:
-  type: q35
-  mac: 52:54:00:7f:eb:35
-ports:
-  - name: vpn1
-    port: 31051
-    targetport: 31051
-  - name: vpn2
-    port: 31052
-    targetport: 31052
+user:
+  domain: 'the.infrastructure.tech/{{ .Release.Namespace }}/{{ .Release.Name }}'
+
+host:
+  hostpath: "/fss/client/earthcycles/vm/"
+  resources:
+    requests:
+      memory: 2048Mi
+      cpu: 2000m
+    limits:
+      memory: 4096Mi
+      cpu: 4000m
+  machine:
+    type: q35
+    mac: 52:54:00:7f:eb:38
+  ports:
+  - name: "kubernetes-apiserver"
+    port: 6443

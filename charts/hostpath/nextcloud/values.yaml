@@ -16,9 +16,9 @@ app:
       OVERWRITEPROTOCOL: https
       TRUSTED_PROXIES: 10.4.111.1
     hostPath:
-      mountPath: /k8s/red/{{ .Release.Namespace }}/{{ .Release.Name }}/app
+      mountPath: /cluster/{{ .Release.Namespace }}/{{ .Release.Name }}/app
       name: app
-    image: nextcloud:19.0.5-apache
+    image: nextcloud:stable-apache #19.0.5-apache
     priorityClass: prod-low
     resources:
       limits:
@@ -27,20 +27,20 @@ app:
       requests:
         cpu: 500m
         memory: 1000Mi
-  domain: nc.test.eons.dev
+  domain: CHANGEME
 postgres:
   deployment:
     affinity:
-      nodeSelectors:
-      - key: storage
-        value: red1
-      - key: db
-        value: sync1
+      nodeSelectors: {}
+    #   - key: storage
+    #     value: red1
+    #   - key: db
+    #     value: sync1
     db:
       auth: password
       name: nextcloud
     hostPath:
-      mountPath: /eons/local/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
+      mountPath: /cluster/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
       name: pg-data
     priorityClass: prod-low
     resources:
@@ -51,7 +51,7 @@ postgres:
         cpu: 500m
         memory: 1000Mi
   secrets:
-    DB_PASSWORD: CNjhIbAgFGPy
+    DB_PASSWORD: CHANGEME
     DB_USER: ncuser
 secrets:
   letsencrypt:
@@ -59,8 +59,8 @@ secrets:
     kind: ClusterIssuer
     secretName: nextcloud-letsencrypt-cert
   nextcloudAdmin:
-    NEXTCLOUD_ADMIN_PASSWORD: IAmTheKingOfWorms!
-    NEXTCLOUD_ADMIN_USER: manimarco
+    NEXTCLOUD_ADMIN_PASSWORD: CHANGEME
+    NEXTCLOUD_ADMIN_USER: CHANGEME
     secretName: nextcloud-admin-secrets
 service:
   nextcloud:

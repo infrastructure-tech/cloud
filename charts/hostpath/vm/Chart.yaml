@@ -1,5 +1,5 @@
 apiVersion: v2
-description: Vortorol Moochoons
-name: vm
+description: Deploy a workload using Eons Infrastructure Technologies img_host / img_guest system
+name: virtual
 type: application
 version: 0.0.1

@@ -1,0 +1,44 @@
+# apiVersion: traefik.io/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: keycloak
+# spec:
+#   entryPoints:
+#     - websecure
+#   routes:
+#   - kind: Rule
+#     match: Host(`{{ .Values.app.domain }}`)
+#     # middlewares:
+#     #   - name: https-redirect
+#     #     namespace: default
+#     services:
+#     - name: {{ .Values.service.keycloak.name }}
+#       port: 8080
+#   tls:
+#     secretName: {{ .Values.secrets.letsencrypt.secretName }}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    # traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    # traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.app.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.keycloak.name }}
+            port:
+              number: 8080
+  tls:
+  - hosts:
+    - {{ .Values.app.domain }}
+    secretName: keycloak-tls

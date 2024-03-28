@@ -28,7 +28,8 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: eons-admin-cr
+  # name: eons-admin-cr
+  name: cluster-admin
 subjects:
   - kind: ServiceAccount
     name: eons-admin-sa
@@ -39,3 +40,12 @@ apiVersion: v1
 metadata:
   namespace: kube-system
   name: eons-admin-sa
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: eons-admin-sa
+  namespace: kube-system
+  annotations:
+    kubernetes.io/service-account.name: "eons-admin-sa"
+type: kubernetes.io/service-account-token  
