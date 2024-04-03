@@ -64,14 +64,4 @@ spec:
                   proto:toor
                   root:toor
                 expire: False
-              write_files:
-              # - path: /guest/image
-              #   permissions: "0644"
-              #   content: "{{ .Values.guest.image }}"
-              #   owner: proto:proto
-              # - path: /guest/rclone
-              #   encoding: b64
-              #   permissions: "0644"
-              #   content: "{{ .Values.guest.rclone }}"
-              #   owner: proto:proto
         

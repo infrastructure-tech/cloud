@@ -1,7 +1,6 @@
-user:
-  domain: 'the.infrastructure.tech/{{ .Release.Namespace }}/{{ .Release.Name }}'
-
 host:
+  name: '{{ .Release.Name }}'
+  fqdn: '{{ .Release.Name }}.{{ .Release.Namespace }}.client.infrastructure.tech'
   hostpath: "/fss/client/earthcycles/vm/"
   resources:
     requests:

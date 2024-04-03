@@ -1,18 +1,4 @@
 {{- range $p := $.Values.host.ports }}
-# apiVersion: traefik.containo.us/v1alpha1
-# kind: IngressRoute
-# metadata:
-#   name: '{{ tpl $.Values.host.name $ }}-{{ $p.name }}'
-# spec:
-#   entryPoints:
-#     - {{ $p.name }}
-#   routes:
-#   - kind: Rule
-#     match: Host(`{{ tpl $.Values.user.domain $ }}`)
-#     services:
-#     - name: {{ tpl $.Values.host.name $ }}-svc
-#       port: {{ $p.port }}
-# ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -22,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: {{ .Values.user.domain }}
+  - host: {{ .Values.host.fqdn }}
     http:
       paths:
       - path: /
@@ -34,7 +20,7 @@ spec:
               number: {{ $p.port }}
   # tls:
   # - hosts:
-  #   - {{ .Values.user.domain }}
+  #   - {{ .Values.host.fqdn }}
   #   secretName: {{ .Values.secrets.letsencrypt.secretName }}
 ---
 {{- end }}
