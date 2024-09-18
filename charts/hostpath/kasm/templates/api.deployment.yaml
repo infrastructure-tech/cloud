@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-api
+  name: {{ .Release.Name }}-kasm-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-api
+        affinity: {{ .Release.Name }}-kasm-api
+    spec:
+      # affinity:
+      #   podAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       {{- range .Values.kasm.deployment.affinity.podAffinity.labelSelectors }}
+      #       - labelSelector:
+      #           {{- range .labelSelector.matchExpressions }}
+      #           matchExpressions:
+      #             - key: {{ .key }}
+      #               operator: {{ .operator }}
+      #               values:
+      #                 {{- range .values }}
+      #                 - {{ tpl . $ }}
+      #                   {{- end }}
+      #         {{- end }}
+      #         topologyKey: {{ .labelSelector.topologyKey }}
+      #         namespaces:
+      #           - {{ $.Release.Namespace }}
+      #     {{- end }}
+      volumes:
+        - name: kasm-config
+          configMap:
+            name: {{ .Release.Name }}
+      dnsConfig:
+        nameservers:
+        - 1.1.1.1
+      containers:
+      - env:
+        - name: POSTGRES_HOST
+          value: {{ tpl (index .Values "postgres" "service" "name") . }}
+        - name: POSTGRES_DB
+          value: {{ index .Values "postgres" "deployment" "db" "name" }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: DB_PASSWORD
+              name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: DB_USER
+              name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+        - name: REDIS_HOST
+          value: "{{ .Release.Name }}-redis-svc"
+        - name: REDIS_HOST_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: REDIS_HOST_PASSWORD
+              name: "{{ .Release.Name }}-redis-secret"
+        image: {{ .Values.kasm.deployment.api.image }}
+        command: ["/bin/sh", "-c"]
+        args: ["/usr/bin/kasm --cfg /opt/kasm/current/conf/app/api.app.config.yaml --enable-admin-api --enable-client-api --enable-public-api --port 80"]
+        imagePullPolicy: Always
+        name: kasm-api
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: kasm-config
+            mountPath: /opt/kasm/current/conf/app/
+        resources:
+          requests:
+            cpu: {{ .Values.kasm.deployment.api.resources.requests.cpu }}
+            memory: {{ .Values.kasm.deployment.api.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.kasm.deployment.api.resources.limits.cpu }}
+            memory: {{ .Values.kasm.deployment.api.resources.limits.memory }}
+      restartPolicy: Always
+      priorityClassName: {{ .Values.kasm.deployment.api.priorityClass }}

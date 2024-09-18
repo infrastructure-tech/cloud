@@ -23,7 +23,7 @@ fi
 namespace="$1"
 release="$site"
 #chart="cm/wordpress"
-chart="$HOME/git/infrastructure-tech/web/charts/hostpath/wordpress"
+chart="$HOME/git/infrastructure-tech/cloud/charts/hostpath/wordpress"
 
 valuesPath="$HOME/inf/k8s/helm/release/wp/${org}"
 valuesFile="${valuesPath}/${release}.yaml"

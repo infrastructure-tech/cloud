@@ -14,11 +14,11 @@ app:
     env:
       APACHE_DISABLE_REWRITE_IP: 1
       OVERWRITEPROTOCOL: https
-      TRUSTED_PROXIES: 10.4.111.1
+      TRUSTED_PROXIES: 10.0.0.0/8
     hostPath:
-      mountPath: /cluster/{{ .Release.Namespace }}/{{ .Release.Name }}/app
+      mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/app
       name: app
-    image: nextcloud:stable-apache #19.0.5-apache
+    image: nextcloud:29.0-apache
     priorityClass: prod-low
     resources:
       limits:
@@ -28,6 +28,9 @@ app:
         cpu: 500m
         memory: 1000Mi
   domain: CHANGEME
+  ingress:
+    path: /
+    secretName: nextcloud-letsencrypt-cert
 postgres:
   deployment:
     affinity:
@@ -40,7 +43,7 @@ postgres:
       auth: password
       name: nextcloud
     hostPath:
-      mountPath: /cluster/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
+      mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
       name: pg-data
     priorityClass: prod-low
     resources:
@@ -57,7 +60,6 @@ secrets:
   letsencrypt:
     issuer: letsencrypt
     kind: ClusterIssuer
-    secretName: nextcloud-letsencrypt-cert
   nextcloudAdmin:
     NEXTCLOUD_ADMIN_PASSWORD: CHANGEME
     NEXTCLOUD_ADMIN_USER: CHANGEME
@@ -67,3 +69,14 @@ service:
     name: nextcloud-svc
   postgres:
     name: nextcloud-postgres-svc
+
+redis:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1000Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  secrets:
+    REDIS_HOST_PASSWORD: CHANGEME

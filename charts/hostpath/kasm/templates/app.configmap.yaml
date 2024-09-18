@@ -1,0 +1,218 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+  annotations:
+    helm.sh/hook: pre-install,post-delete
+data:
+  api.app.config.yaml: |
+    database:
+      name: {{ .Values.postgres.deployment.db.name }}
+      username: {{ .Values.postgres.secrets.DB_USER }}
+      password: {{ .Values.postgres.secrets.DB_PASSWORD }}
+      host: {{ .Values.service.postgres.name }}
+      port: 5432
+      type: postgres
+      pool_size: 10
+      max_overflow: 20
+      max_backoff: 10
+      max_retries: 5
+      retry_interval: 1
+      retry_interval_max: 10
+    redis:
+      host: kasm-redis-svc
+      port: 6379
+      redis_password: {{ .Values.redis.secrets.REDIS_HOST_PASSWORD }}
+    logging:
+      agent:
+        formatters:
+          standard:
+            format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        handlers:
+          file_handler:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/agent.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          file_handler_json:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/agent_json.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          stream:
+            class: logging.StreamHandler
+            formatter: standard
+            level: INFO
+          syslog:
+            class: logging.handlers.SysLogHandler
+            formatter: standard
+            level: DEBUG
+        loggers:
+          ? ''
+          : handlers:
+            - stream
+            - syslog
+            - file_handler
+            - file_handler_json
+            level: DEBUG
+            propagate: true
+        version: 1
+      manager_api_server:
+        formatters:
+          standard:
+            format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        handlers:
+          file_handler:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/manager_api_server.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          file_handler_json:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/manager_api_server_json.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          stream:
+            class: logging.StreamHandler
+            formatter: standard
+            level: INFO
+          syslog:
+            class: logging.handlers.SysLogHandler
+            formatter: standard
+            level: DEBUG
+        loggers:
+          ? ''
+          : handlers:
+            - stream
+            - syslog
+            - file_handler
+            - file_handler_json
+            level: DEBUG
+            propagate: true
+          __main__.handler:
+            level: DEBUG
+          provider_manager:
+            level: DEBUG
+          provider:
+            level: DEBUG
+          tornado:
+            level: INFO
+          sqlalchemy.pool:
+            level: WARNING
+          sqlalchemy.engine:
+            level: WARNING
+          sqlalchemy.dialects:
+            level: WARNING
+          sqlalchemy.orm:
+            level: WARNING
+        version: 1
+      api_server:
+        filters:
+          request_context_filter:
+            (): utils.RequestContextFilter
+        formatters:
+          standard:
+            format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        handlers:
+          file_handler:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/api_server.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          file_handler_json:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/api_server_json.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+            filters: [request_context_filter]
+          subscription_file_handler:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/subscription_api_server.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          admin_file_handler:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/admin_api_server.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          client_file_handler:
+            backupCount: 20
+            class: logging.handlers.RotatingFileHandler
+            encoding: utf8
+            filename: /opt/kasm/current/log/client_api_server.log
+            formatter: standard
+            level: DEBUG
+            maxBytes: 10485760
+          stream:
+            class: logging.StreamHandler
+            formatter: standard
+            level: DEBUG
+          syslog:
+            class: logging.handlers.SysLogHandler
+            formatter: standard
+            level: DEBUG
+        loggers:
+          ? ''
+          : handlers:
+            - stream
+            - syslog
+            - file_handler
+            - file_handler_json
+            level: DEBUG
+            propagate: true
+          client_api_server:
+            handlers:
+              - client_file_handler
+          admin_api_server:
+            handlers:
+              - admin_file_handler
+          subscription_api_server:
+            handlers:
+              - subscription_file_handler
+          cherrypy.error:
+            level: INFO
+          cherrypy.access:
+            level: INFO
+          sqlalchemy.pool:
+            level: WARNING
+          sqlalchemy.engine:
+            level: WARNING
+          sqlalchemy.dialects:
+            level: WARNING
+          sqlalchemy.orm:
+            level: WARNING
+        version: 1
+    manager:
+      manager_id: {{ .Values.kasm.deployment.manager.id }}
+      update_timer: 86400
+    server:
+      server_id: {{ .Values.kasm.deployment.api.id }}
+      server_hostname: "{{ .Values.kasm.domain }}"
+      zone_name: default
+      pool_size: 0

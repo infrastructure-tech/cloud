@@ -1,0 +1,117 @@
+secrets:
+  letsencrypt:
+    issuer: letsencrypt
+    kind: ClusterIssuer
+
+service:
+  postgres:
+    name: kasm-postgres-svc
+
+kasm:
+  domain: CHANGEME
+  ingressIp: CHANGEME
+  ingress:
+    path: /
+    secretName: kasm-letsencrypt-cert
+  defaultManagerToken: CHANGEME
+  defaultRegistrationToken: CHANGEME
+  defaultAdminPassword: CHANGEME
+  defaultUserPassword: CHANGEME
+
+  deployment:
+    affinity:
+      podAffinity:
+        labelSelectors:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - '{{ tpl (index .Values "postgres" "deployment" "name") .
+                }}'
+            topologyKey: kubernetes.io/hostname
+    api:
+      id: 00000000-0000-0000-0000-000000000000
+      image: eons/kasm.img:1.15.0
+      priorityClass: prod-low
+      resources:
+        limits:
+          cpu: 4000m
+          memory: 4000Mi
+        requests:
+          cpu: 500m
+          memory: 1000Mi
+    manager:
+      id: 00000000-0000-0000-0000-000000000000
+      image: eons/kasm.img:1.15.0
+      priorityClass: prod-low
+      resources:
+        limits:
+          cpu: 4000m
+          memory: 4000Mi
+        requests:
+          cpu: 500m
+          memory: 1000Mi
+    proxy:
+      image: eons/kasm.proxy.img:1.15.0
+      priorityClass: prod-low
+      resources:
+        limits:
+          cpu: 4000m
+          memory: 4000Mi
+        requests:
+          cpu: 500m
+          memory: 1000Mi
+      serviceKeepAlive: 16
+      workers: 10
+    guac:
+      id: 00000000-0000-0000-0000-000000000000
+      auth_token: CHANGEME
+      cluster_size: 1
+      image: eons/kasm.guac.img:1.15.0
+      priorityClass: prod-low
+      resources:
+        limits:
+          cpu: 4000m
+          memory: 4000Mi
+        requests:
+          cpu: 500m
+          memory: 1000Mi
+
+postgres:
+  deployment:
+    affinity:
+      nodeSelectors: {}
+    #   - key: storage
+    #     value: red1
+    #   - key: db
+    #     value: sync1
+    db:
+      auth: password
+      name: kasm
+    hostPath:
+      mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
+      name: pg-data
+    image: postgres:16.4-alpine
+    priorityClass: prod-low
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4000Mi
+      requests:
+        cpu: 500m
+        memory: 1000Mi
+  secrets:
+    DB_PASSWORD: CHANGEME
+    DB_USER: kasm
+
+redis:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1000Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  secrets:
+    REDIS_HOST_PASSWORD: CHANGEME

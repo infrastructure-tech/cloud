@@ -1,0 +1,8 @@
+apiVersion: v2
+dependencies:
+- name: postgres
+  version: 0.2.3
+description: Now go to sleep in Kasms deep
+name: Kasm
+type: application
+version: 0.0.0

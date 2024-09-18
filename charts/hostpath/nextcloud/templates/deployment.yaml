@@ -40,6 +40,9 @@ spec:
           hostPath:
             path: {{ tpl .Values.app.deployment.hostPath.mountPath . }}
             type: DirectoryOrCreate
+        - name: apache
+          configMap:
+            name: apache
       dnsConfig:
         nameservers:
         - 1.1.1.1
@@ -47,12 +50,6 @@ spec:
       - env:
         - name: POSTGRES_HOST
           value: {{ tpl (index .Values "postgres" "service" "name") . }}
-        - name: NEXTCLOUD_TRUSTED_DOMAINS
-          value: "{{ .Values.app.domain }}"
-        - name: APACHE_DISABLE_REWRITE_IP
-          value: "{{ .Values.app.deployment.env.APACHE_DISABLE_REWRITE_IP }}"
-        - name: TRUSTED_PROXIES
-          value: "{{ .Values.app.deployment.env.TRUSTED_PROXIES }}"
         - name: POSTGRES_DB
           value: {{ index .Values "postgres" "deployment" "db" "name" }}
         - name: POSTGRES_PASSWORD
@@ -65,6 +62,33 @@ spec:
             secretKeyRef:
               key: DB_USER
               name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+        - name: REDIS_HOST
+          value: "{{ .Release.Name }}-redis-svc"
+        - name: REDIS_HOST_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: REDIS_HOST_PASSWORD
+              name: "{{ .Release.Name }}-redis-secret"
+        - name: NEXTCLOUD_TRUSTED_DOMAINS
+          value: "{{ .Values.app.domain }}"
+        - name: APACHE_DISABLE_REWRITE_IP
+          value: "{{ .Values.app.deployment.env.APACHE_DISABLE_REWRITE_IP }}"
+        - name: TRUSTED_PROXIES
+          value: "{{ .Values.app.deployment.env.TRUSTED_PROXIES }}"
+        - name: OBJECTSTORE_S3_BUCKET
+          value: {{ .Values.app.deployment.env.OBJECTSTORE_S3_BUCKET }}
+        - name: OBJECTSTORE_S3_KEY
+          value: {{ .Values.app.deployment.env.OBJECTSTORE_S3_KEY }}
+        - name: OBJECTSTORE_S3_SECRET
+          value: {{ .Values.app.deployment.env.OBJECTSTORE_S3_SECRET }}
+        - name: OBJECTSTORE_S3_REGION
+          value: {{ .Values.app.deployment.env.OBJECTSTORE_S3_REGION }}
+        - name: OBJECTSTORE_S3_HOST
+          value: {{ .Values.app.deployment.env.OBJECTSTORE_S3_HOST }}
+        - name: OBJECTSTORE_S3_PORT
+          value: "{{ .Values.app.deployment.env.OBJECTSTORE_S3_PORT }}"
+        - name: OBJECTSTORE_S3_SSL
+          value: "{{ .Values.app.deployment.env.OBJECTSTORE_S3_SSL }}"
         - name: OVERWRITEHOST
           value: "{{ .Values.app.domain }}"
         - name: OVERWRITEPROTOCOL
@@ -80,13 +104,17 @@ spec:
               key: NEXTCLOUD_ADMIN_PASSWORD
               name: {{ .Values.secrets.nextcloudAdmin.secretName }}
         image: {{ .Values.app.deployment.image }}
-        imagePullPolicy: IfNotPresent
+        #imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         name: app
         ports:
         - containerPort: 80
         volumeMounts:
           - name: {{ .Release.Name }}-data
             mountPath: /var/www/html/
+          - name: apache
+            mountPath: /etc/apache2/apache2.conf
+            subPath: apache2.conf
         resources:
           requests:
             cpu: {{ .Values.app.deployment.resources.requests.cpu }}

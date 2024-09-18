@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+  name: {{ .Release.Name }}-guac
+spec:
+#  type: LoadBalancer
+#  externalTrafficPolicy: Local
+  ports:
+  - name: guacd
+    port: 4822
+  - name: kasmguac
+    port: 3000
+  {{- $cluster_size := int .Values.kasm.deployment.guac.cluster_size }}
+  {{- range $i := until $cluster_size }}
+  - name: {{ printf "kasmguac-%d" $i }}
+    port: {{ add 3001 $i }}
+  {{- end }}
+  selector:
+    app: {{ .Release.Name }}-guac

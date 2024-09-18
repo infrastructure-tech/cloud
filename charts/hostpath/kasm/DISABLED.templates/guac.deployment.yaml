@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-guac
+  name: {{ .Release.Name }}-kasm-guac
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-guac
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-guac
+        affinity: {{ .Release.Name }}-kasm-guac
+    spec:
+      # affinity:
+      #   podAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       {{- range .Values.kasm.deployment.affinity.podAffinity.labelSelectors }}
+      #       - labelSelector:
+      #           {{- range .labelSelector.matchExpressions }}
+      #           matchExpressions:
+      #             - key: {{ .key }}
+      #               operator: {{ .operator }}
+      #               values:
+      #                 {{- range .values }}
+      #                 - {{ tpl . $ }}
+      #                   {{- end }}
+      #         {{- end }}
+      #         topologyKey: {{ .labelSelector.topologyKey }}
+      #         namespaces:
+      #           - {{ $.Release.Namespace }}
+      #     {{- end }}
+      dnsPolicy: "ClusterFirst"
+      dnsConfig:
+        nameservers:
+        - 1.1.1.1
+      containers:
+      - image: {{ .Values.kasm.deployment.guac.image }}
+        imagePullPolicy: Always
+        name: kasm-guac
+        ports:
+        - containerPort: 4822
+        - containerPort: 3000
+        {{- $cluster_size := int .Values.kasm.deployment.guac.cluster_size }}
+        {{- range $i := until $cluster_size }}
+        - containerPort: {{ add 3001 $i }}
+        {{- end }}
+        volumeMounts:
+        - mountPath: /opt/kasm/current/conf/app/
+          name: kasm-guac-config
+        resources:
+          requests:
+            cpu: {{ .Values.kasm.deployment.guac.resources.requests.cpu }}
+            memory: {{ .Values.kasm.deployment.guac.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.kasm.deployment.guac.resources.limits.cpu }}
+            memory: {{ .Values.kasm.deployment.guac.resources.limits.memory }}
+      restartPolicy: Always
+      priorityClassName: {{ .Values.kasm.deployment.guac.priorityClass }}
+      volumes:
+        - name: kasm-guac-config
+          configMap:
+            name: {{ .Release.Name }}-guac

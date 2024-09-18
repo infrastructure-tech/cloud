@@ -1,4 +1,5 @@
 deployment:
+  args: ["--default-authentication-plugin=mysql_native_password", "--skip-log-bin"]
   affinity: {}
   database: '{{ .Release.Name }}-db'
   hostPath:

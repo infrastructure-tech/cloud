@@ -23,15 +23,15 @@ metadata:
   name: keycloak
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt"
-    # traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    # traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
   - host: {{ .Values.app.domain }}
     http:
       paths:
-      - path: /
+      - path: {{ .Values.app.ingress.path }}
         pathType: Prefix
         backend:
           service:
@@ -41,4 +41,4 @@ spec:
   tls:
   - hosts:
     - {{ .Values.app.domain }}
-    secretName: keycloak-tls
+    secretName: {{ .Values.app.ingress.secretName }}

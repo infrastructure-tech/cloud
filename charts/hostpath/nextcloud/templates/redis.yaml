@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-redis
+  name: {{ .Release.Name }}-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-redis
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-redis
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - {{ .Release.Name }}
+              topologyKey: kubernetes.io/hostname
+              namespaces:
+                - {{ .Release.Namespace }}
+      containers:
+        - image: redis:alpine
+          name: redis
+          ports:
+            - containerPort: 6379
+          args:
+            - redis-server
+            - --requirepass
+            - {{ tpl .Values.redis.secrets.REDIS_HOST_PASSWORD . }}
+          env:
+            - name: REDIS_HOST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_HOST_PASSWORD
+                  name: {{ .Release.Name }}-redis-secret
+          resources:
+            limits:
+              cpu: {{ .Values.redis.resources.limits.cpu }}
+              memory: {{ .Values.redis.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.redis.resources.requests.cpu }}
+              memory: {{ .Values.redis.resources.requests.memory }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Release.Name }}-redis
+  name: {{ .Release.Name }}-redis-svc
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: {{ .Release.Name }}-redis
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: {{ .Release.Name }}-redis
+  name: {{ .Release.Name }}-redis-secret
+type: Opaque
+data:
+  REDIS_HOST_PASSWORD: {{ .Values.redis.secrets.REDIS_HOST_PASSWORD | b64enc }}

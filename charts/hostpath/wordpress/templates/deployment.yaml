@@ -23,6 +23,9 @@ spec:
                   values: [{{ .Release.Name }}-mysql]
             topologyKey: kubernetes.io/hostname
             # namespaces: ["*"]
+      dnsConfig:
+        nameservers:
+        - 1.1.1.1
       containers:
       - image: {{ .Values.deployment.image }}
         name: wordpress

@@ -104,15 +104,9 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  volumeClaimTemplates:
-    - metadata:
-        name: config
-      spec:
-        accessModes: [ "{{ .Values.dynamicConfig.upload.pvc.accessMode }}" ]
-        resources:
-          requests:
-            storage: {{ .Values.dynamicConfig.upload.pvc.size }}
-        {{- if .Values.dynamicConfig.upload.pvc.storageClassName }}
-        storageClassName: {{ .Values.dynamicConfig.upload.pvc.storageClassName }}
-        {{- end }}
+  volumes:
+  - name: config
+    hostPath:
+      path: /eons/cloud/collabora
+      type: DirectoryOrCreate
 {{- end }}

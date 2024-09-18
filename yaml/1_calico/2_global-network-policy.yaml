@@ -1,0 +1,13 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: global-deny-client-to-all
+spec:
+  order: 400
+  selector: "for == 'client'"
+  egress:
+    - action: Deny
+      destination:
+        selector: "all()"  # This targets all destinations, effectively isolating the namespace completely.
+  types:
+    - Egress

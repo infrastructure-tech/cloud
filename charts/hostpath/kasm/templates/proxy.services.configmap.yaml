@@ -1,0 +1,368 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-proxy-services-configmap
+  labels:
+    app: {{ .Release.Name }}-proxy
+  annotations:
+    helm.sh/hook: pre-install,post-delete
+data:
+  admin_api.conf: |
+    location /api/admin/ {
+      proxy_http_version	1.1;
+      proxy_set_header	Host $host;
+      proxy_set_header	Upgrade $http_upgrade;
+      proxy_set_header	Connection "upgrade";
+      proxy_set_header	X-Real-IP $remote_addr;
+      proxy_set_header	X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header	X-Forwarded-Proto $scheme;
+
+      add_header Strict-Transport-Security "max-age=63072000" always;
+
+      proxy_pass	http://kasm-api;
+    }
+
+  client_api.conf: |
+    location /api/ {
+      proxy_http_version	1.1;
+      proxy_set_header	Host $host;
+      proxy_set_header	Upgrade $http_upgrade;
+      proxy_set_header	Connection "upgrade";
+      proxy_set_header	X-Real-IP $remote_addr;
+      proxy_set_header	X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header	X-Forwarded-Proto $scheme;
+
+      add_header Strict-Transport-Security "max-age=63072000" always;
+
+      proxy_pass	http://kasm-api;
+    }
+
+  manager_api.conf: |
+    location /manager_api/ {
+      proxy_http_version	1.1;
+      proxy_set_header	Host $host;
+      proxy_set_header	Upgrade $http_upgrade;
+      proxy_set_header	Connection "upgrade";
+      proxy_set_header	X-Real-IP $remote_addr;
+      proxy_set_header	X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header	X-Forwarded-Proto $scheme;
+
+      proxy_pass	http://kasm-manager/;
+    }
+
+  # kasmguac.conf: |
+  #   location /guac_connect/vnc/ {
+  #     proxy_http_version      1.1;
+  #     proxy_set_header        Host $host;
+  #     proxy_set_header        Upgrade $http_upgrade;
+  #     proxy_set_header        Connection "upgrade";
+  #     proxy_set_header        X-Real-IP $remote_addr;
+  #     proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  #     proxy_set_header        X-Forwarded-Proto $scheme;
+
+  #     proxy_pass              http://kasm-guac:3000/;
+  #     proxy_read_timeout      1800s;
+  #     proxy_send_timeout      1800s;
+  #     proxy_connect_timeout   1800s;
+  #     proxy_buffering         off;
+  #     client_max_body_size 1G;
+  #     expires                 4h;
+
+  #     add_header              Strict-Transport-Security "max-age=63072000" always;
+  #     add_header              Cache-Control "private";
+  #   }
+
+  #   location /guac_connect/vnc/vnc.htmlguaclite {
+  #     proxy_http_version      1.1;
+  #     proxy_set_header        Host $host;
+  #     proxy_set_header        Upgrade $http_upgrade;
+  #     proxy_set_header        Connection "upgrade";
+  #     proxy_set_header        X-Real-IP $remote_addr;
+  #     proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  #     proxy_set_header        X-Forwarded-Proto $scheme;
+
+  #     proxy_pass              http://kasm_guac_backend/vnc.htmlguaclite$is_args$args;
+  #     proxy_read_timeout      1800s;
+  #     proxy_send_timeout      1800s;
+  #     proxy_connect_timeout   1800s;
+  #     proxy_buffering         off;
+  #     client_max_body_size 1G;
+  #     expires                 4h;
+
+  #     add_header              Cache-Control "private";
+  #     add_header              Strict-Transport-Security "max-age=63072000" always;
+  #     add_header              X-Content-Type-Options 'nosniff';
+  #   }
+
+  #   location /vm_connect {
+  #     internal;
+  #     proxy_pass http://kasm-guac:3000/vm_connect;
+  #     proxy_pass_request_body off;
+  #     proxy_set_header        Content-Length '';
+  #     proxy_set_header        X-Original-URI $request_uri;
+  #   }
+
+  #   location /guac_connect/uploads/ {
+  #     auth_request            /vm_connect;
+  #     auth_request_set        $connect_hostname     $upstream_http_connect_hostname;
+  #     auth_request_set        $connect_port         $upstream_http_connect_port;
+  #     auth_request_set        $connect_path         $upstream_http_connect_path;
+  #     auth_request_set        $connect_auth         $upstream_http_connect_auth;
+
+  #     proxy_http_version      1.1;
+  #     proxy_set_header        Host $host;
+  #     proxy_set_header        Upgrade $http_upgrade;
+  #     proxy_set_header        Connection "upgrade";
+  #     proxy_set_header        X-Real-IP $remote_addr;
+  #     proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  #     proxy_set_header        X-Forwarded-Proto $scheme;
+  #     proxy_set_header        Authorization "Bearer ${connect_auth}";
+
+  #     rewrite ^/guac_connect/uploads/(.*) /$1 break;
+  #     proxy_pass              https://$connect_hostname:$connect_port;
+  #     proxy_read_timeout      1800s;
+  #     proxy_send_timeout      1800s;
+  #     proxy_connect_timeout   1800s;
+  #     proxy_buffering         off;
+  #     client_max_body_size 1G;
+  #     expires                 4h;
+
+  #     add_header              Cache-Control "private";
+  #     add_header              Strict-Transport-Security "max-age=63072000" always;
+  #   }
+
+  #   location /guac_connect/downloads/ {
+  #     auth_request            /vm_connect;
+  #     auth_request_set        $connect_hostname     $upstream_http_connect_hostname;
+  #     auth_request_set        $connect_port         $upstream_http_connect_port;
+  #     auth_request_set        $connect_path         $upstream_http_connect_path;
+  #     auth_request_set        $connect_auth         $upstream_http_connect_auth;
+
+  #     proxy_http_version      1.1;
+  #     proxy_set_header        Host $host;
+  #     proxy_set_header        Upgrade $http_upgrade;
+  #     proxy_set_header        Connection "upgrade";
+  #     proxy_set_header        X-Real-IP $remote_addr;
+  #     proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  #     proxy_set_header        X-Forwarded-Proto $scheme;
+  #     proxy_set_header        Authorization "Bearer ${connect_auth}";
+
+  #     rewrite ^/guac_connect/downloads/(.*) /$1 break;
+  #     proxy_pass              https://$connect_hostname:$connect_port;
+  #     proxy_read_timeout      1800s;
+  #     proxy_send_timeout      1800s;
+  #     proxy_connect_timeout   1800s;
+  #     proxy_buffering         off;
+  #     client_max_body_size 1G;
+  #     expires                 4h;
+
+  #     add_header              Strict-Transport-Security "max-age=63072000" always;
+  #     add_header              Cache-Control "private";
+  #   }
+
+  #   location /guac_connect/api/ {
+  #     auth_request            /vm_connect;
+  #     auth_request_set        $connect_hostname     $upstream_http_connect_hostname;
+  #     auth_request_set        $connect_port         $upstream_http_connect_port;
+  #     auth_request_set        $connect_path         $upstream_http_connect_path;
+  #     auth_request_set        $connect_auth         $upstream_http_connect_auth;
+
+  #     proxy_http_version      1.1;
+  #     proxy_set_header        Host $host;
+  #     proxy_set_header        Upgrade $http_upgrade;
+  #     proxy_set_header        Connection "upgrade";
+  #     proxy_set_header        X-Real-IP $remote_addr;
+  #     proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+  #     proxy_set_header        X-Forwarded-Proto $scheme;
+  #     proxy_set_header        Authorization "Bearer ${connect_auth}";
+
+  #     rewrite ^/guac_connect/api/(.*) /$1 break;
+  #     proxy_pass              https://$connect_hostname:$connect_port;
+  #     proxy_read_timeout      1800s;
+  #     proxy_send_timeout      1800s;
+  #     proxy_connect_timeout   1800s;
+  #     proxy_buffering         off;
+  #     client_max_body_size 1G;
+  #     expires                 4h;
+
+  #     add_header              Strict-Transport-Security "max-age=63072000" always;
+  #     add_header              Cache-Control "private";
+  #   }
+
+  #   location /guac_login {
+  #     proxy_pass http://kasm-guac:3000/guac_login;
+  #   }
+
+  #   location /guac/__healthcheck {
+  #     proxy_pass http://kasm-guac:3000/__healthcheck;
+  #   }
+
+  #   location /guac/vm_disconnect {
+  #     proxy_pass http://kasm-guac:3000/vm_disconnect;
+  #   }
+
+  upstream_proxy.conf: |
+    location /kasm_connect {
+      internal;
+      proxy_pass http://kasm-api/api/kasm_connect/;
+      proxy_pass_request_body off;
+      proxy_set_header        Content-Length '';
+      proxy_set_header        X-Original-URI $request_uri;
+      proxy_set_header        Cookie "username=$cookie_username; session_token=$cookie_session_token; kasm_client_key=$cookie_kasm_client_key";
+
+      proxy_http_version       1.1;
+      proxy_set_header        Connection "";
+    }
+
+    location /desktop/ {
+      if ($request_method = OPTIONS) {
+        rewrite .* /_options_response last;
+      }
+
+      auth_request            /kasm_connect;
+      auth_request_set        $connect_hostname     $upstream_http_connect_hostname;
+      auth_request_set        $connect_port         $upstream_http_connect_port;
+      auth_request_set        $connect_path         $upstream_http_connect_path;
+      auth_request_set        $connect_auth         $upstream_http_connect_auth;
+      auth_request_set        $connect_kasm_id      $upstream_http_connect_kasm_id;
+      auth_request_set        $connect_schema       $upstream_http_connect_schema;
+
+      proxy_http_version      1.1;
+      proxy_set_header        Host $host;
+      proxy_set_header        Upgrade $http_upgrade;
+      proxy_set_header        Connection "upgrade";
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        Authorization "${connect_auth}";
+      proxy_set_header        X-Kasm-ID "${connect_kasm_id}";
+      proxy_set_header        Cookie "username=$cookie_username; session_token=$cookie_session_token; kasm_client_key=$cookie_kasm_client_key";
+
+      rewrite ^/desktop/(.*) /$1 break;
+
+      # proxy_pass              $connect_schema://$connect_hostname:$connect_port/$connect_path; # connect_schema is a lie.
+      proxy_pass              https://$connect_hostname:$connect_port/$connect_path; # agent works; guac doesn't.
+      # proxy_pass              http://127.0.0.1:80/$connect_path; # guac works; agent doesn't.
+
+      proxy_read_timeout      1800s;
+      proxy_send_timeout      1800s;
+      proxy_connect_timeout   1800s;
+      proxy_buffering         off;
+      client_max_body_size 1G;
+      expires                 4h;
+      add_header              Cache-Control "private";
+
+      proxy_hide_header   'Access-Control-Allow-Credentials';
+      proxy_hide_header   'Access-Control-Allow-Origin';
+      proxy_hide_header   'Access-Control-Allow-Methods';
+      proxy_hide_header   'Access-Control-Allow-Headers';
+      proxy_hide_header   'Strict-Transport-Security';
+      proxy_hide_header   'X-Content-Type-Options';
+      add_header 'Access-Control-Allow-Origin' $http_origin 'always';
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' 'always';
+      add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' 'always';
+      add_header 'Access-Control-Allow-Credentials' 'true' 'always';
+      add_header 'Strict-Transport-Security' "max-age=63072000" always;
+      add_header 'X-Content-Type-Options' 'nosniff';
+
+    }
+
+    location ~ /kasmguac/([0-9a-f-]+)/(\w+)(?!/vnc.htmlguaclite)(/.+) {
+      if ($request_method = OPTIONS) {
+        rewrite .* /_options_response last;
+      }
+
+      set $kasm_id  $1;
+      set $service  $2;
+      set $new_path $3;
+
+      proxy_http_version      1.1;
+      proxy_set_header        Host $host;
+      proxy_set_header        Upgrade $http_upgrade;
+      proxy_set_header        Connection "upgrade";
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        X-Kasm-ID "${kasm_id}";
+      proxy_set_header        Authorization "Bearer ${connect_auth}";
+      proxy_set_header        Cookie "username=$cookie_username; session_token=$cookie_session_token; kasm_client_key=$cookie_kasm_client_key";
+
+      proxy_pass              http://127.0.0.1:80/guac_connect/$service$new_path;
+      proxy_read_timeout      1800s;
+      proxy_send_timeout      1800s;
+      proxy_connect_timeout   1800s;
+      proxy_buffering         off;
+      client_max_body_size 1G;
+      expires                 4h;
+
+      add_header              Cache-Control "private";
+      add_header              Strict-Transport-Security "max-age=63072000" always;
+    }
+
+    location ~ /kasmguac/([0-9a-f-]+)/vnc/vnc.htmlguaclite {
+      if ($request_method = OPTIONS) {
+        rewrite .* /_options_response last;
+      }
+
+      set $kasm_id $1;
+
+      proxy_http_version      1.1;
+      proxy_set_header        Host $host;
+      proxy_set_header        Upgrade $http_upgrade;
+      proxy_set_header        Connection "upgrade";
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Kasm-ID "${kasm_id}";
+      proxy_set_header        Cookie "username=$cookie_username; session_token=$cookie_session_token; kasm_client_key=$cookie_kasm_client_key";
+
+      proxy_pass              http://kasm-guac:3000/vnc.htmlguaclite$is_args$args;
+      proxy_read_timeout      1800s;
+      proxy_send_timeout      1800s;
+      proxy_connect_timeout   1800s;
+      proxy_buffering         off;
+      client_max_body_size 1G;
+      expires                 4h;
+      add_header              Cache-Control "private";
+
+      proxy_hide_header   'Access-Control-Allow-Credentials';
+      proxy_hide_header   'Access-Control-Allow-Origin';
+      proxy_hide_header   'Access-Control-Allow-Methods';
+      proxy_hide_header   'Access-Control-Allow-Headers';
+      proxy_hide_header   'Strict-Transport-Security';
+      proxy_hide_header   'X-Content-Type-Options';
+      add_header 'Access-Control-Allow-Origin' $http_origin 'always';
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' 'always';
+      add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' 'always';
+      add_header 'Access-Control-Allow-Credentials' 'true' 'always';
+      add_header 'Strict-Transport-Security' "max-age=63072000" always;
+      add_header 'X-Content-Type-Options' 'nosniff';
+    }
+
+    location /_options_response {
+      add_header 'Access-Control-Allow-Origin' $http_origin 'always';
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' 'always';
+      add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' 'always';
+      add_header 'Access-Control-Allow-Credentials' 'true' 'always';
+      add_header 'Strict-Transport-Security' "max-age=63072000" always;
+      add_header 'X-Content-Type-Options' 'nosniff';
+      add_header Content-Type text/plain;
+      add_header Content-Length 0;
+      return 204;
+    }
+
+  website.conf: |
+    location / {
+      expires         4h;
+      add_header      Cache-Control "private";
+      add_header      X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+      add_header      'Access-Control-Allow-Origin' $http_origin always;
+      add_header      'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+      add_header      'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+      add_header      'Access-Control-Allow-Credentials' 'true';
+      add_header      'Strict-Transport-Security' "max-age=63072000" always;
+      add_header      'X-Content-Type-Options' 'nosniff';
+
+      root /srv/www;
+    }
+
+    

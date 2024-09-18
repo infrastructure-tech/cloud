@@ -5331,6 +5331,9 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      dnsConfig:
+        nameservers:
+        - 1.1.1.1
       containers:
         - name: cert-manager-cainjector
           image: "quay.io/jetstack/cert-manager-cainjector:v1.12.0"
@@ -5464,6 +5467,9 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      dnsConfig:
+        nameservers:
+        - 1.1.1.1
       containers:
         - name: cert-manager-webhook
           image: "quay.io/jetstack/cert-manager-webhook:v1.12.0"

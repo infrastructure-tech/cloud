@@ -1,5 +1,8 @@
 app:
   deployment:
+    hostPath:
+      mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/app
+      name: app
     args: ["start-dev"] # Always use dev, since cert-manager handles SSL, etc.
     affinity:
       podAffinity:
@@ -9,29 +12,64 @@ app:
             - key: app
               operator: In
               values:
-              - '{{ tpl (index .Values "postgres" "postgres" "deployment"
+              - '{{ tpl (index .Values "mysql" "deployment"
                 "name") . }}'
             topologyKey: kubernetes.io/hostname
     env:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-postgres-svc:5432/keycloak
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://keycloak-mysql-service/keycloak
       KEYCLOAK_STATISTICS: all
-    image: quay.io/keycloak/keycloak:24.0.1
+    image: quay.io/keycloak/keycloak:24.0.4
     replicas: 1
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 8000Mi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
   domain: CHANGEME
   url: https://CHANGEME
-postgres:
-  postgres:
-    deployment:
-      db:
-        auth: password
-        name: keycloak
-      hostPath:
-        mountPath: /cluster/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
-        name: pg-data
-    secrets:
-      DB_PASSWORD: CHANGEME
-      DB_USER: keycloakuser
+  ingress:
+    path: /
+    secretName: keycloak-tls
+# postgres:
+#   postgres:
+#     deployment:
+#       db:
+#         auth: password
+#         name: keycloak
+#       hostPath:
+#         mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/db
+#         name: db
+#     secrets:
+#       DB_PASSWORD: CHANGEME
+#       DB_USER: keycloakuser
+mysql:
+  deployment:
+    image: mysql:8.0
+    priorityClass: prod-low
+    affinity:
+      nodeSelectors:
+      - key: serve
+        value: prod
+    database: keycloak
+    hostPath:
+      mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/db
+      name: mysql-data
+  secrets:
+    password: 'CHANGEME'
+    rootpassword: 'CHANGEME'
+    user: keycloakuser
+  service:
+    name: 'keycloak-mysql-service'
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 8000Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
 secrets:
   admin:
     KEYCLOAK_ADMIN_PASSWORD: CHANGEME

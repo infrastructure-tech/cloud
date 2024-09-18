@@ -3,12 +3,13 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: '{{ tpl $.Values.host.name $ }}-{{ $p.name }}'
-  # annotations:
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: vm
     # cert-manager.io/cluster-issuer: "letsencrypt"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
-  - host: {{ .Values.host.fqdn }}
+  - host: {{ tpl $.Values.host.fqdn $ }}
     http:
       paths:
       - path: /
@@ -20,7 +21,7 @@ spec:
               number: {{ $p.port }}
   # tls:
   # - hosts:
-  #   - {{ .Values.host.fqdn }}
-  #   secretName: {{ .Values.secrets.letsencrypt.secretName }}
+  #   - {{ tpl $.Values.host.fqdn $ }}
+  #   secretName: '{{ tpl $.Values.host.name $ }}-{{ $p.name }}-secret'
 ---
 {{- end }}

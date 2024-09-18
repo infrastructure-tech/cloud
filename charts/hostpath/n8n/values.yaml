@@ -1,0 +1,57 @@
+app:
+  deployment:
+    affinity:
+      podAffinity:
+        labelSelectors:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - '{{ tpl (index .Values "postgres" "deployment" "name") .
+                }}'
+            topologyKey: kubernetes.io/hostname
+    hostPath:
+      mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/app
+      name: app
+    image: n8nio/n8n:latest
+    priorityClass: prod-low
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4000Mi
+      requests:
+        cpu: 500m
+        memory: 1000Mi
+  domain: CHANGEME
+  ingress:
+    path: /
+    secretName: n8n-letsencrypt-cert
+postgres:
+  deployment:
+    affinity:
+      nodeSelectors: {}
+    #   - key: storage
+    #     value: red1
+    #   - key: db
+    #     value: sync1
+    db:
+      auth: password
+      name: n8n
+    hostPath:
+      mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/pg-data
+      name: pg-data
+    priorityClass: prod-low
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4000Mi
+      requests:
+        cpu: 500m
+        memory: 1000Mi
+  secrets:
+    DB_PASSWORD: CHANGEME
+    DB_USER: n8nuser
+service:
+  postgres:
+    name: n8n-postgres-svc

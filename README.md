@@ -34,7 +34,7 @@ To get up and running with our K8s system, we recommend you first clone this rep
 Then, you can run the following commands to deploy the necessary services:
 
 ```bash
-kubectl apply -f  -R ./yaml/
+kubectl apply -R -f ./yaml/INSTALL
 ```
 
 That will get you a basic cluster.

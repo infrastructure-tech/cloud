@@ -14,6 +14,11 @@ spec:
       labels:
         app: keycloak
     spec:
+      # volumes:
+      # - name: {{ tpl .Values.app.deployment.hostPath.name . }}
+      #   hostPath:
+      #     path: {{ tpl .Values.app.deployment.hostPath.mountPath . }}
+      #     type: DirectoryOrCreate
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -36,9 +41,20 @@ spec:
       - name: keycloak
         image: {{ .Values.app.deployment.image }}
         args: {{ .Values.app.deployment.args }}
+        # volumeMounts:
+        # - mountPath: /ObjectStore
+        #   name: {{ tpl .Values.app.deployment.hostPath.name . }}
         env:
         # - name: KC_LOG_LEVEL
         #   value: DEBUG
+        # - name: QUARKUS_TRANSACTION_MANAGER_OBJECT_STORE_DIRECTORY
+        #   value: /ObjectStore
+        - name: QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY
+          value: "true"
+        - name: QUARKUS_TRANSACTION_TIMEOUT
+          value: "36000"
+        - name: QUARKUS_TRANSACTION_MANAGER_DEFAULT_TRANSACTION_TIMEOUT
+          value: "36000"
         - name: KC_HOSTNAME_STRICT_HTTPS
           value: "true"
         - name: KC_HOSTNAME_URL
@@ -66,15 +82,17 @@ spec:
         - name: KC_DB_URL
           value: {{ .Values.app.deployment.env.KC_DB_URL }}
         - name: KC_DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              key: DB_USER
-              name: {{ tpl (index .Values "postgres" "postgres" "secrets" "secretName") . }}
+          value: root
+        # - name: KC_DB_USERNAME
+        #   valueFrom:
+        #     secretKeyRef:
+        #       key: MYSQL_USER
+        #       name: '{{ .Release.Name }}-mysql-secret'
         - name: KC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              key: DB_PASSWORD
-              name: {{ tpl (index .Values "postgres" "postgres" "secrets" "secretName") . }}
+              key: MYSQL_ROOT_PASSWORD
+              name: '{{ .Release.Name }}-mysql-secret'
         ports:
         - name: http
           containerPort: 8080
@@ -82,3 +100,10 @@ spec:
           httpGet:
             path: /
             port: 8080
+        resources:
+          requests:
+            cpu: {{ .Values.app.deployment.resources.requests.cpu }}
+            memory: {{ .Values.app.deployment.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.app.deployment.resources.limits.cpu }}
+            memory: {{ .Values.app.deployment.resources.limits.memory }}

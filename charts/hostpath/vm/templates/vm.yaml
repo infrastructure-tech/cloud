@@ -13,17 +13,34 @@ spec:
       labels:
         kubevirt.io/domain: "{{ tpl .Values.host.name . }}"
     spec:
+      nodeSelector:
+        {{- range $s := $.Values.host.additional.selectors }}
+        {{ $s.key }}: {{ $s.value }}
+        {{- end }}
       domain:
+        cpu:
+          dedicatedCpuPlacement: true
+          isolateEmulatorThread: true
+          # ioThreadsPolicy: auto # "not available for sata"
+          cores: {{ .Values.host.resources.cpu }}
         devices:
+          blockMultiQueue: true
           disks:
             - name: hostdisk
               bootOrder: 1
+              # dedicatedIOThread: true
               disk:
                 bus: virtio
             - name: "cloudinit"
               cdrom:
                 bus: "sata"
                 readonly: true
+            {{- range $d := $.Values.host.additional.disks }}
+            - name: {{ $d.name }}
+              # dedicatedIOThread: true
+              disk:
+                bus: virtio
+            {{- end }}
           interfaces:
             - name: "default"
               bridge: {}
@@ -32,20 +49,20 @@ spec:
           type: {{ .Values.host.machine.type }}
         resources:
           requests:
-            memory: {{ .Values.host.resources.requests.memory }}
-            cpu: {{ .Values.host.resources.requests.cpu }}
+            memory: {{ .Values.host.resources.memory }}
       networks:
         - name: "default"
           pod: {}
       volumes:
-        # - hostDisk:
-        #     capacity: 1Gi
-        #     path: /fss/disk.img
-        #     type: DiskOrCreate
-        #   name: hostdisk
+        {{- range $d := $.Values.host.additional.disks }}
+        - hostDisk:
+            path: {{ $d.path }}
+            type: DiskOrCreate
+          name: {{ $d.name }}
+        {{- end }}
         - name: hostdisk
           hostDisk:
-            path: "{{ .Values.host.hostpath }}/{{ tpl .Values.host.name . }}.img"
+            path: "{{ .Values.host.path }}/{{ .Release.Namespace }}/vm/{{ tpl .Values.host.name . }}.img"
             type: DiskOrCreate
           # containerDisk:
           #   image: {{ .Values.host.image }}

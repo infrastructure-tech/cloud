@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: volume-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown 1000:1000 /data"]
+          volumeMounts:
+            - name: {{ .Release.Name }}-data
+              mountPath: /data
+      containers:
+        - command:
+            - /bin/sh
+          args:
+            - -c
+            - sleep 5; n8n start
+          env:
+            - name: DB_TYPE
+              value: postgresdb
+            - name: DB_POSTGRESDB_HOST
+              value: {{ tpl (index .Values "postgres" "service" "name") . }}
+            - name: DB_POSTGRESDB_PORT
+              value: "5432"
+            - name: DB_POSTGRESDB_DATABASE
+              value: {{ index .Values "postgres" "deployment" "db" "name" }}
+            - name: DB_POSTGRESDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+                  key: DB_USER
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+                  key: DB_PASSWORD
+            - name: N8N_PROTOCOL
+              value: http
+            - name: N8N_PORT
+              value: "5678"
+            - name: N8N_HOST
+              value: {{ .Values.app.domain }}
+            - name: WEBHOOK_URL
+              value: https://{{ .Values.app.domain }}/
+            - name: N8N_LOG_LEVEL
+              value: debug
+            # - name: DISABLE_IPV6
+            #   value: "true"
+          image: {{ .Values.app.deployment.image }}
+          name: n8n
+          ports:
+            - containerPort: 5678
+          resources:
+            requests:
+              memory: "250Mi"
+            limits:
+              memory: "500Mi"
+          volumeMounts:
+            - mountPath: /home/node/.n8n
+              name: {{ .Release.Name }}-data
+      priorityClassName: {{ .Values.app.deployment.priorityClass }}
+      restartPolicy: Always
+      volumes:
+        - name: {{ .Release.Name }}-data
+          hostPath:
+            path: {{ tpl .Values.app.deployment.hostPath.mountPath . }}
+            type: DirectoryOrCreate
+      dnsPolicy: None
+      dnsConfig:
+        searches:
+        - {{ .Release.Namespace }}.svc.cluster.local
+        - svc.cluster.local
+        - cluster.local
+        nameservers:
+        - 1.1.1.1
+        - 10.222.2.10 # FIXME: Hard coded per cluster.
+        
+        # Having the default ndots: 5 will break axios lookups and you'll get a "getaddrinfo ENOTFOUND" error.
+        options:
+        - name: ndots
+          value: "1"

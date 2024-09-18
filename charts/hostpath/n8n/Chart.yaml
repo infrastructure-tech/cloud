@@ -1,0 +1,9 @@
+apiVersion: v2
+dependencies:
+- name: postgres
+  repository: http://10.4.4.2
+  version: 0.2.3
+description: Dear Marni, I am so sorry.
+name: Nodemation
+type: application
+version: 0.0.1

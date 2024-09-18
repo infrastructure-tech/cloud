@@ -10,4 +10,4 @@ spec:
       targetPort: {{ .port }}
   {{- end }}
   selector:
-    app: "{{ tpl .Values.host.name . }}"
+    vm.kubevirt.io/name: "{{ tpl .Values.host.name . }}"

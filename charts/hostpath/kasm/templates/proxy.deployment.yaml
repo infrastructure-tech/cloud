@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-proxy
+  name: {{ .Release.Name }}-kasm-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-proxy
+        affinity: {{ .Release.Name }}-kasm-proxy
+    spec:
+      # affinity:
+      #   podAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       {{- range .Values.kasm.deployment.affinity.podAffinity.labelSelectors }}
+      #       - labelSelector:
+      #           {{- range .labelSelector.matchExpressions }}
+      #           matchExpressions:
+      #             - key: {{ .key }}
+      #               operator: {{ .operator }}
+      #               values:
+      #                 {{- range .values }}
+      #                 - {{ tpl . $ }}
+      #                   {{- end }}
+      #         {{- end }}
+      #         topologyKey: {{ .labelSelector.topologyKey }}
+      #         namespaces:
+      #           - {{ $.Release.Namespace }}
+      #     {{- end }}
+      restartPolicy: Always
+      dnsConfig:
+        nameservers:
+        - 1.1.1.1
+      hostAliases:
+        - ip: "{{ .Values.kasm.ingressIp }}"
+          hostnames:
+          - "{{ .Values.kasm.domain }}"
+      priorityClassName: {{ .Values.kasm.deployment.proxy.priorityClass }}
+      containers:
+        - name: kasm-proxy
+          image: {{ .Values.kasm.deployment.proxy.image }}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: {{ .Values.kasm.deployment.proxy.resources.requests.cpu }}
+              memory: {{ .Values.kasm.deployment.proxy.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.kasm.deployment.proxy.resources.limits.cpu }}
+              memory: {{ .Values.kasm.deployment.proxy.resources.limits.memory }}
+          volumeMounts:
+            - name: nginx-proxy-settings-config
+              mountPath: /etc/nginx/conf.d
+            - name: nginx-proxy-services-config
+              mountPath: /etc/nginx/conf.d/services.d
+            - name: nginx-proxy-base-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          ports:
+            - name: kasm-proxy-port
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   tcpSocket:
+          #     port: kasm-proxy-port
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          #   successThreshold: 1
+          #   failureThreshold: 3
+      volumes:
+        - name: nginx-proxy-base-config
+          configMap:
+            name: {{ .Release.Name }}-proxy-base-configmap
+        - name: nginx-proxy-settings-config
+          configMap:
+            name: {{ .Release.Name }}-proxy-settings-configmap
+        - name: nginx-proxy-services-config
+          configMap:
+            name: {{ .Release.Name }}-proxy-services-configmap

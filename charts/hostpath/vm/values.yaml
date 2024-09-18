@@ -1,7 +1,7 @@
 host:
   name: '{{ .Release.Name }}'
   fqdn: '{{ .Release.Name }}.{{ .Release.Namespace }}.client.infrastructure.tech'
-  hostpath: "/fss/client/earthcycles/vm/"
+  path: '/fss/client/'
   resources:
     requests:
       memory: 2048Mi
@@ -13,5 +13,10 @@ host:
     type: q35
     mac: 52:54:00:7f:eb:38
   ports:
-  - name: "kubernetes-apiserver"
-    port: 6443
+  - name: vm
+    port: 2082
+  additional:
+  #   disks: {}
+  selectors:
+  - key: serve
+    value: vm

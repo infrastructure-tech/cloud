@@ -1,0 +1,78 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-db-init-job
+  labels:
+    app: {{ .Release.Name }}-db-init
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}-db-init
+    spec:
+      restartPolicy: OnFailure
+      # initContainers:
+      #   - name: db-is-ready
+      #     image: {{ .Values.kasm.deployment.api.image }}
+      #     imagePullPolicy: IfNotPresent
+      #     command:
+      #       - "/bin/bash"
+      #       - "-c"
+      #     args:
+      #       - |
+      #         while ! pg_isready -h db -p 5432; do echo "Waiting for DB..."; sleep 5; done
+      containers:
+        - name: {{ .Release.Name }}-db-init-container
+          image: {{ .Values.kasm.deployment.api.image }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_AUTO_INITIALIZE
+              value: "false"
+            - name: DEFAULT_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-kasm-secrets
+                  key: DEFAULT_ADMIN_PASSWORD
+            - name: DEFAULT_MANAGER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-kasm-secrets
+                  key: DEFAULT_MANAGER_TOKEN
+            - name: DEFAULT_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-kasm-secrets
+                  key: DEFAULT_REGISTRATION_TOKEN
+            - name: DEFAULT_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-kasm-secrets
+                  key: DEFAULT_USER_PASSWORD
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl (index .Values "postgres" "secrets" "secretName") . }}
+                  key: DB_PASSWORD
+          command:
+            - "/bin/bash"
+            - "-c"
+          args:
+            - |
+              sleep 30;
+              echo "Checking if database is initialized...";
+              if [ ! $(PGPASSWORD=$POSTGRES_PASSWORD psql -U kasm -d kasm -h db -t -c "select zone_id from zones" 2>/dev/null | wc -l) -ge 2 ]; then export DB_AUTO_INITIALIZE="true"; fi
+              if [[ "$DB_AUTO_INITIALIZE" == "true" ]]; then echo "Will initialize database..."; /usr/bin/startup.sh; else echo "DB already initialized."; fi
+          volumeMounts:
+            - name: db-init-script
+              mountPath: /usr/bin/startup.sh
+              subPath: startup.sh
+            - name: kasm-config
+              mountPath: /opt/kasm/current/conf/app/
+      volumes:
+        - name: db-init-script
+          configMap:
+            name: {{ .Release.Name }}-db-init-startup
+            defaultMode: 0755
+        - name: kasm-config
+          configMap:
+            name: {{ .Release.Name }}

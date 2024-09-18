@@ -19,7 +19,7 @@ spec:
       containers:
       - image: {{ .Values.deployment.image }}
         name: mysql
-        args: ["--default-authentication-plugin=mysql_native_password", "--skip-log-bin"]
+        args: {{ .Values.deployment.args }}
         env:
         - name: MYSQL_PASSWORD
           valueFrom:

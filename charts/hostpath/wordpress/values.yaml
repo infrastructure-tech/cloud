@@ -13,13 +13,14 @@ deployment:
   resources:
     limits:
       cpu: 2000m
-      memory: 2000Mi
+      memory: 8000Mi
     requests:
       cpu: 250m
-      memory: 256Mi
+      memory: 250Mi
 domain: INVALID
 mysql:
   deployment:
+    image: mysql:8.0
     priorityClass: dev-low
     affinity:
       nodeSelectors:
@@ -35,6 +36,13 @@ mysql:
     user: '{{ .Release.Name }}-mysql-user'
   service:
     name: '{{ .Release.Name }}-mysql-service'
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 8000Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
 secrets:
   letsencrypt:
     issuer: letsencrypt-staging
