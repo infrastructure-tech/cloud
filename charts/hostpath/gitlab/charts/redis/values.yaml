@@ -1,0 +1,10 @@
+redis:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1000Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  secrets:
+    REDIS_HOST_PASSWORD: CHANGEME

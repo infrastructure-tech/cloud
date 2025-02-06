@@ -18,7 +18,7 @@ app:
     hostPath:
       mountPath: /eons/local/cloud/{{ .Release.Namespace }}/{{ .Release.Name }}/app
       name: app
-    image: nextcloud:29.0-apache
+    image: nextcloud:stable-apache
     priorityClass: prod-low
     resources:
       limits:

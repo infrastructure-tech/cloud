@@ -89,6 +89,10 @@ spec:
           value: "{{ .Values.app.deployment.env.OBJECTSTORE_S3_PORT }}"
         - name: OBJECTSTORE_S3_SSL
           value: "{{ .Values.app.deployment.env.OBJECTSTORE_S3_SSL }}"
+        - name: OBJECTSTORE_S3_USEPATH_STYLE
+          value: "{{ .Values.app.deployment.env.OBJECTSTORE_S3_USEPATH_STYLE }}"
+        - name: OBJECTSTORE_S3_AUTOCREATE
+          value: "{{ .Values.app.deployment.env.OBJECTSTORE_S3_AUTOCREATE }}"
         - name: OVERWRITEHOST
           value: "{{ .Values.app.domain }}"
         - name: OVERWRITEPROTOCOL

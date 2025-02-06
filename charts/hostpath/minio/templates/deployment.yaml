@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      nodeSelector:
+      {{- range .Values.deployment.affinity.nodeSelectors }}
+        {{ .key }}: {{ .value }}
+      {{- end }}
+      containers:
+        - name: minio
+          image: {{ .Values.deployment.image }}
+          command:
+           - /bin/bash
+           - -c
+          args:
+            - {{ .Values.deployment.command }}
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}
+                  key: MINIO_ROOT_USER
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}
+                  key: MINIO_ROOT_PASSWORD
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 9090
+              name: console
+          volumeMounts:
+            - name: data
+              mountPath: /mnt/data
+          resources:
+            requests:
+              cpu: {{ tpl .Values.deployment.resources.requests.cpu . }}
+              memory: {{ tpl .Values.deployment.resources.requests.memory . }}
+            limits:
+              cpu: {{ tpl .Values.deployment.resources.limits.cpu . }}
+              memory: {{ tpl .Values.deployment.resources.limits.memory . }}
+      priorityClassName: {{ tpl .Values.deployment.priorityClass . }}
+      volumes:
+        - name: data
+          hostPath:
+            path: {{ .Values.deployment.hostPath }}
+            type: DirectoryOrCreate
+      restartPolicy: Always

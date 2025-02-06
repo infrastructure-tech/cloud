@@ -32,7 +32,7 @@ kasm:
             topologyKey: kubernetes.io/hostname
     api:
       id: 00000000-0000-0000-0000-000000000000
-      image: eons/kasm.img:1.15.0
+      image: eons/kasm.img:1.16.1
       priorityClass: prod-low
       resources:
         limits:
@@ -43,7 +43,7 @@ kasm:
           memory: 1000Mi
     manager:
       id: 00000000-0000-0000-0000-000000000000
-      image: eons/kasm.img:1.15.0
+      image: eons/kasm.img:1.16.1
       priorityClass: prod-low
       resources:
         limits:
@@ -53,7 +53,7 @@ kasm:
           cpu: 500m
           memory: 1000Mi
     proxy:
-      image: eons/kasm.proxy.img:1.15.0
+      image: eons/kasm.proxy.img:1.16.1
       priorityClass: prod-low
       resources:
         limits:
@@ -68,7 +68,7 @@ kasm:
       id: 00000000-0000-0000-0000-000000000000
       auth_token: CHANGEME
       cluster_size: 1
-      image: eons/kasm.guac.img:1.15.0
+      image: eons/kasm.guac.img:1.16.1
       priorityClass: prod-low
       resources:
         limits:

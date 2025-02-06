@@ -1,0 +1,29 @@
+deployment:
+  command: "minio server /mnt/data --console-address :9090"
+  affinity:
+    nodeSelectors: {}
+  hostPath: /CHANGME
+  image: quay.io/minio/minio:latest
+  priorityClass: prod-low
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 4000Mi
+    requests:
+      cpu: 500m
+      memory: 1000Mi
+
+domain: CHANGEME
+
+ingress:
+  expose: true
+  path: /
+  secretName: minio-letsencrypt-cert
+
+secrets:
+  letsencrypt:
+    issuer: letsencrypt
+    kind: ClusterIssuer
+  minio:
+    MINIO_ROOT_USER: CHANGEME
+    MINIO_ROOT_PASSWORD: CHANGEME

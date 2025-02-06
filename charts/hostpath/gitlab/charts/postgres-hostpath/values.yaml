@@ -1,0 +1,30 @@
+deployment:
+  affinity:
+    nodeSelectors:
+    - key: db
+      value: sync1
+  db:
+    auth: password
+    name: CHANGE_ME
+  hostPath:
+    mountPath: /CHANGE_ME
+    name: pg-data
+    volumeMountPath: /var/lib/postgresql/data
+  image: postgres:16.4-alpine
+  name: '{{ .Release.Name }}-postgres'
+  priorityClass: dev-low
+  replicas: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2000Mi
+    requests:
+      cpu: 500m
+      memory: 500Mi
+secrets:
+  DB_PASSWORD: CHANGE_ME
+  DB_USER: DEFAULT_USER
+  secretName: '{{ .Release.Name }}-postgres-secret'
+service:
+  name: '{{ .Release.Name }}-postgres-svc'
+  type: ClusterIP
